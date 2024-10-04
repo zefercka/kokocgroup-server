@@ -40,7 +40,8 @@ async def create_user(user: schemas.UserCreate, db: AsyncSession = Depends(get_d
     
 
 @app.post("/auth")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: AsyncSession = Depends(get_db)) -> schemas.User:
+async def login(form_data: schemas.AuthUser, db: AsyncSession = Depends(get_db)) -> schemas.User:
+    print(form_data)
     user = await services.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
