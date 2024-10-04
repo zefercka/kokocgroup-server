@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
+from datetime import date
 
 
 class UserBase(BaseModel):
@@ -8,6 +9,7 @@ class UserBase(BaseModel):
     first_name: str
     last_name: str
     patronymic: Optional[str] = None
+    date_of_birth: date
     phone_number: Optional[str] = None
 
 
@@ -19,4 +21,18 @@ class User(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class AuthUser(BaseModel):
+    username: str
+    password: str
+        
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    
+    
+class TokenData(BaseModel):
+    username: str | None = None
