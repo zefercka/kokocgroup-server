@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from api.database import Base
 from datetime import date
 
+
 class User(Base):
     __tablename__ = "users"
     

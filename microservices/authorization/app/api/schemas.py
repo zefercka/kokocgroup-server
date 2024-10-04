@@ -22,9 +22,16 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+        
+
+class AuthorizedUser(BaseModel):
+    access_token: str
+    refresh_token: str
+    user: User
 
 
-class AuthUser(BaseModel):
+
+class Authorization(BaseModel):
     username: str
     password: str
         

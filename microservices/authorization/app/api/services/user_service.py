@@ -1,20 +1,19 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from . import models, schemas, dependencies
+from .. import models, schemas
 from fastapi import HTTPException, status, Depends
-import jwt
 from typing import Annotated
-# from jwt.exceptions import InvalidTokenError
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jwt import InvalidTokenError
+from fastapi.security import OAuth2PasswordBearer
+from ..dependecies import jwt, hash
 
-SECRET_KEY = "1d9a7b4577355c1e0c8d31edf503ef4d85e4b3f9f1c96506dde4ebc4a68d2885"
-ALGORITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 async def get_user(db: AsyncSession, user_id: int) -> models.User | None:
     results = await db.execute(select(models.User).where(models.User.id == user_id))
     return results.scalars().first()
+
 
 async def get_user_by_username(db: AsyncSession, username: str) -> models.User | None:
     results = await db.execute(select(models.User).where(models.User.username == username))
@@ -32,8 +31,8 @@ async def get_users(db: AsyncSession, limit: int = 50, offset: int = 0) -> model
 
 
 async def create_user(db: AsyncSession, user_create: schemas.UserCreate) -> models.User | None:
-    user_data = user_create.dict(exclude={"password"})
-    user_data["password_hash"] = await dependencies.get_password_hash(user_create.password)
+    user_data = user_create.model_dump(exclude={"password"})
+    user_data["password_hash"] = await hash.get_password_hash(user_create.password)
     user = models.User(**user_data)
     db.add(user)
     await db.commit()
@@ -41,12 +40,28 @@ async def create_user(db: AsyncSession, user_create: schemas.UserCreate) -> mode
     return user
 
 
+async def authorise_user(db: AsyncSession, login: str, password: str) -> schemas.AuthorizedUser:
+    user = await authenticate_user(db, login, password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный логин или пароль",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    access_token = await jwt.create_access_token(data={"sub": user.id})
+    refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
+    
+    authorized_user = schemas.AuthorizedUser(user=user, access_token=access_token, refresh_token=refresh_token)
+    return authorized_user
+ 
+
 async def authenticate_user(db: AsyncSession, login: str, password: str) -> models.User | None:
     user = await get_user_by_username(db, login) or await get_user_by_email(db, login)
     if user is None:
         return None
 
-    if await dependencies.verify_password(password, user.password_hash):
+    if await hash.verify_password(password, user.password_hash):
         return user
 
     return None
@@ -58,15 +73,16 @@ async def get_current_user(db: AsyncSession, token: Annotated[str, Depends(oauth
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        username = jwt.get_user_id(token=token)
         if username is None:
             raise credentials_exception
         token_data = schemas.TokenData(username=username)
-    except Exception as err:
+    except InvalidTokenError as err:
         print(err)
         raise credentials_exception
+    
     user = get_user(db, username=token_data.username)
     if user is None:
         raise credentials_exception
