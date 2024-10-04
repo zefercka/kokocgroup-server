@@ -5,4 +5,5 @@ asyncpg
 python-jose
 bcrypt==4.0.1
 passlib[bcrypt]
-jwt
+pyjwt
+alembic
