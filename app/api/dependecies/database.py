@@ -24,3 +24,11 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
+    
+
+async def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        await db.close()

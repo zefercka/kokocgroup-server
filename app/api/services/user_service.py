@@ -7,8 +7,9 @@ from jwt import InvalidTokenError
 from fastapi.security import OAuth2PasswordBearer
 from ..dependecies import jwt, hash
 from datetime import datetime, timezone
+from ..dependecies.database import get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/auth/logout")
 
 
 async def get_user(db: AsyncSession, user_id: int) -> models.User | None:
@@ -54,31 +55,25 @@ async def get_token_by_token(db: AsyncSession, token: str):
     return results.scalars().first()
 
 
-async def delete_token(db: AsyncSession, token: schemas.Token):
+async def delete_token(db: AsyncSession, token: schemas.BaseToken):
     token_obj = await get_token_by_token(db, token.token)
     if token_obj is not None:
         await db.delete(token_obj)
         await db.commit()
 
 
-async def add_token(db: AsyncSession, token: schemas.Token, user_id: int):
-    db_token = models.RefreshToken(token=token.token, expire_date=token.expire_date.replace(tzinfo=None), user_id=user_id)
+async def add_token(db: AsyncSession, token: schemas.BaseToken, user_id: int, finger_print: str = "defaultfinger"):
+    db_token = models.RefreshToken(
+        token=token.token, expire_date=token.expire_date.replace(tzinfo=None), user_id=user_id
+    )
     db.add(db_token)
     await db.commit()
     await db.refresh(db_token)
     return db_token
-
-
-async def check_token_expiration(token: schemas.Token) -> models.RefreshToken | None:
-    # Возвращает True, если токен истёк
-    token = get_token_by_token(token)
-    return token.expire_date <= datetime.now(timezone.utc)
-    
     
 
-
-async def authorise_user(db: AsyncSession, login: str, password: str) -> schemas.AuthorizedUser:
-    user = await authenticate_user(db, login, password)
+async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schemas.AuthorizedUser:
+    user = await authenticate_user(db, data.login, data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -89,14 +84,14 @@ async def authorise_user(db: AsyncSession, login: str, password: str) -> schemas
     access_token = await jwt.create_access_token(data={"sub": user.id})
     refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
     
-    await add_token(db, refresh_token, user.id)
+    await add_token(db, token=refresh_token, user_id=user.id)
     
     authorized_user = schemas.AuthorizedUser(user=user, access_token=access_token, refresh_token=refresh_token)
     return authorized_user
  
 
 async def authenticate_user(db: AsyncSession, login: str, password: str) -> models.User | None:
-    user = await get_user_by_username(db, login) or await get_user_by_email(db, login)
+    user = await get_user_by_username(db, username=login) or await get_user_by_email(email=login)
     if user is None:
         return None
 
@@ -107,7 +102,7 @@ async def authenticate_user(db: AsyncSession, login: str, password: str) -> mode
 
 
 # Переделать, что передаётся не стр, а токен 
-async def get_current_user(db: AsyncSession, token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(db: AsyncSession = Depends(get_db), token: schemas.BaseToken | None = None):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -115,7 +110,7 @@ async def get_current_user(db: AsyncSession, token: Annotated[str, Depends(oauth
     )
     
     try:
-        user_id = jwt.get_user_id(token=token)
+        user_id = await jwt.get_user_id(token=token)
         if user_id is None:
             raise credentials_exception
         token_data = schemas.TokenData(user_id=user_id)
@@ -123,20 +118,19 @@ async def get_current_user(db: AsyncSession, token: Annotated[str, Depends(oauth
         print(err)
         raise credentials_exception
     
-    user = get_user(db, user_id=token_data.user_id)
+    user = await get_user(user_id=token_data.user_id)
     if user is None:
         raise credentials_exception
     return user
 
 
-async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> dict:
+async def new_tokens(db: AsyncSession, refresh_token: schemas.BaseToken) -> dict:
     # check if token is valid
-    if (check_token_expiration):
+    if (await jwt.check_token_expiration(refresh_token)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Срок действия токена истёк"
         )
-    
     
     user_id = await jwt.get_user_id(refresh_token)
     

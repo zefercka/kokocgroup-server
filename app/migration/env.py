@@ -12,7 +12,7 @@ from os.path import dirname, abspath
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
-from api.database import SQLALCHEMY_DATABASE_URL, Base
+from authorization.app.api.dependecies.database import SQLALCHEMY_DATABASE_URL, Base
 from api.models import User, RefreshToken
 
 # this is the Alembic Config object, which provides

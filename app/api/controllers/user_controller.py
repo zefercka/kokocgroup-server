@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from ..dependecies.db import get_db
+from ..dependecies.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from .. import schemas, models
 from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy.exc import IntegrityError
-# from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from ..services import user_service
 
 app = APIRouter()
@@ -29,7 +29,7 @@ async def get_users(limit: int = 50, offset: int = 0, db: AsyncSession = Depends
 @app.post("/auth/login", response_model=schemas.AuthorizedUser)
 async def login(form_data: schemas.Authorization, db: AsyncSession = Depends(get_db)):
     try:
-        user = await user_service.authorise_user(db, form_data.login, form_data.password)
+        user = await user_service.authorize_user(db, form_data)
         return user
     except Exception as err:
         raise err
@@ -39,19 +39,20 @@ async def login(form_data: schemas.Authorization, db: AsyncSession = Depends(get
 async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     try:
         db_user = await user_service.create_user(db, user)
-        return await user_service.authorise_user(db, db_user.email, user.password)
+        return await user_service.authorize_user(db, db_user.email, user.password)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     
 @app.post("/auth/refresh", response_model=dict)
-async def update_tokens(refresh_token: schemas.Token, db: AsyncSession = Depends(get_db)):
+async def update_tokens(refresh_token: schemas.BaseToken, db: AsyncSession = Depends(get_db)):
     return await user_service.new_tokens(db, refresh_token)
     
-# @app.post("/auth/logout")
-# async def logout(user: schemas):
-#     return 0
+    
+@app.post("/auth/logout", response_model=schemas.User)
+async def logout(current_user: models.User = Depends(user_service.get_current_user), db: AsyncSession = Depends(get_db)):
+    return current_user
     
 
 

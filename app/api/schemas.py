@@ -24,19 +24,21 @@ class User(UserBase):
         from_attributes = True
         
         
-class Token(BaseModel):
+class BaseToken(BaseModel):
     token: str
-    token_type: str
+
+        
+class SendToken(BaseToken):
     expire_date: datetime
     
     
 class TokenData(BaseModel):
-    user_id: str | None = None
+    user_id: int | None = None
     
 
 class AuthorizedUser(BaseModel):
-    access_token: Token
-    refresh_token: Token
+    access_token: SendToken
+    refresh_token: SendToken
     user: User
 
 
