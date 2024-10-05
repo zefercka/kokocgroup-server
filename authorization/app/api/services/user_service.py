@@ -6,6 +6,7 @@ from typing import Annotated
 from jwt import InvalidTokenError
 from fastapi.security import OAuth2PasswordBearer
 from ..dependecies import jwt, hash
+from datetime import datetime, timezone
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -68,9 +69,11 @@ async def add_token(db: AsyncSession, token: schemas.Token, user_id: int):
     return db_token
 
 
-async def check_token(db: AsyncSession, token: schemas.Token) -> models.RefreshToken | None:
-    user_id = jwt.get_user_id(token)
-    results = await db.execute(select(models.RefreshToken).where(models.RefreshToken.user_id == user_id))
+async def check_token_expiration(token: schemas.Token) -> models.RefreshToken | None:
+    # Возвращает True, если токен истёк
+    token = get_token_by_token(token)
+    return token.expire_date <= datetime.now(timezone.utc)
+    
     
 
 
@@ -128,6 +131,11 @@ async def get_current_user(db: AsyncSession, token: Annotated[str, Depends(oauth
 
 async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> dict:
     # check if token is valid
+    if (check_token_expiration):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Срок действия токена истёк"
+        )
     
     
     user_id = await jwt.get_user_id(refresh_token)
