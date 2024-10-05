@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from datetime import date
+from datetime import date, datetime
 
 
 class UserBase(BaseModel):
@@ -23,23 +23,24 @@ class User(UserBase):
     class Config:
         from_attributes = True
         
+        
+class Token(BaseModel):
+    token: str
+    token_type: str
+    expire_date: datetime
+    
+    
+class TokenData(BaseModel):
+    user_id: str | None = None
+    
 
 class AuthorizedUser(BaseModel):
-    access_token: str
-    refresh_token: str
+    access_token: Token
+    refresh_token: Token
     user: User
 
 
 
 class Authorization(BaseModel):
-    username: str
+    login: str
     password: str
-        
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    
-    
-class TokenData(BaseModel):
-    username: str | None = None
