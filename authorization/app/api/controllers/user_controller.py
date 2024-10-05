@@ -38,8 +38,8 @@ async def login(form_data: schemas.Authorization, db: AsyncSession = Depends(get
 @app.post("/auth/register", response_model=schemas.AuthorizedUser)
 async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     try:
-        user = await user_service.create_user(db, user)
-        return await user_service.authorise_user(db, user.email, user.password)
+        db_user = await user_service.create_user(db, user)
+        return await user_service.authorise_user(db, db_user.email, user.password)
     except Exception as err:
         print(err)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
