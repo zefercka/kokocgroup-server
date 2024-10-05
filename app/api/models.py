@@ -27,9 +27,9 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Убрать id и сделать token primary key
     token: Mapped[str] = mapped_column(unique=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     expire_date: Mapped[datetime]
-    # finger_print: Mapped[str]
     
     user: Mapped["User"] = relationship(back_populates="tokens")

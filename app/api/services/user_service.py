@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from ..dependecies import jwt, hash
 from datetime import datetime, timezone
 from ..dependecies.database import get_db
+from jwt.exceptions import ExpiredSignatureError, DecodeError
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/auth/logout")
 
@@ -50,13 +51,13 @@ async def create_user(db: AsyncSession, user_create: schemas.UserCreate) -> mode
     return user
 
 
-async def get_token_by_token(db: AsyncSession, token: str):
+async def get_token(db: AsyncSession, token: str):
     results = await db.execute(select(models.RefreshToken).where(models.RefreshToken.token == token))
     return results.scalars().first()
 
 
 async def delete_token(db: AsyncSession, token: schemas.BaseToken):
-    token_obj = await get_token_by_token(db, token.token)
+    token_obj = await get_token(db, token.token)
     if token_obj is not None:
         await db.delete(token_obj)
         await db.commit()
@@ -125,19 +126,41 @@ async def get_current_user(db: AsyncSession = Depends(get_db), token: schemas.Ba
 
 
 async def new_tokens(db: AsyncSession, refresh_token: schemas.BaseToken) -> dict:
-    # check if token is valid
-    if (await jwt.check_token_expiration(refresh_token)):
+    try:
+        user_id = await jwt.get_user_id(refresh_token)
+    except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Срок действия токена истёк"
         )
+    except DecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный токен"
+        )
+    except InvalidTokenError as err:
+        print(err)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка обработки токена"
+        )
     
-    user_id = await jwt.get_user_id(refresh_token)
+    token = await get_token(db, token=refresh_token.token)
     
+    print(token)
+    
+    if token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Токен более не действителен"
+        )
+        
+    await delete_token(db, refresh_token) 
+        
     access_token = await jwt.create_access_token(data={"sub": user_id})
-    refresh_token_new = await jwt.create_refresh_token(data={"sub": user_id})
+    refresh_token = await jwt.create_refresh_token(data={"sub": user_id})
     
-    await delete_token(db, refresh_token)
-    await add_token(db, refresh_token_new, user_id)
+    await add_token(db, refresh_token, user_id)
     
-    return {"access": access_token, "refresh": refresh_token_new}
+    # Мб сделать схемой
+    return {"access_token": access_token, "refresh_token": refresh_token}
