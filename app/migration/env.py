@@ -12,8 +12,8 @@ from os.path import dirname, abspath
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
-from authorization.app.api.dependecies.database import SQLALCHEMY_DATABASE_URL, Base
-from api.models import User, RefreshToken
+from api.dependecies.database import SQLALCHEMY_DATABASE_URL, Base
+from api.models import User, RefreshToken, Role
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -22,27 +22,36 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
-        
-        
-class BaseToken(BaseModel):
-    token: str
 
-        
-class SendToken(BaseToken):
-    expire_date: datetime
-    
+
+class Token(BaseModel):
+    token: str
+    expires_at: datetime | None = None
+
+
+class SendToken(BaseModel):
+    access_token: str
+    expires_at: datetime
+    refresh_token: str
+
     
 class TokenData(BaseModel):
     user_id: int | None = None
     
 
 class AuthorizedUser(BaseModel):
-    access_token: SendToken
-    refresh_token: SendToken
+    access_token: str
+    expires_at: datetime
+    refresh_token: str
     user: User
-
 
 
 class Authorization(BaseModel):
     login: str
     password: str
+    
+    
+class Role(BaseModel):
+    id: int | None = None
+    name: str
+    access_level: int

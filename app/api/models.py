@@ -1,8 +1,16 @@
 from typing import Optional, List
-from sqlalchemy import String, func, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, func, ForeignKey, Table, Column
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Relationship
 from .dependecies.database import Base
 from datetime import date, datetime
+
+
+users_roles = Table(
+    "user_roles",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("role_id", ForeignKey("roles.id"), primary_key=True)
+)
 
 
 class User(Base):
@@ -22,14 +30,28 @@ class User(Base):
     tokens: Mapped[List["RefreshToken"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    roles: Mapped[List["Role"]] = relationship(
+        secondary=users_roles, back_populates="users", lazy="selectin"
+    )
+    
+
+class Role(Base):
+    __tablename__ = "roles"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256))
+    access_level: Mapped[int]
+    
+    users: Mapped[List["User"]] = relationship(
+        secondary=users_roles, back_populates="roles", lazy="selectin"
+    )
+
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     
-    id: Mapped[int] = mapped_column(primary_key=True)
-    # Убрать id и сделать token primary key
-    token: Mapped[str] = mapped_column(unique=True)
+    token: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     expire_date: Mapped[datetime]
     
-    user: Mapped["User"] = relationship(back_populates="tokens")
+    user: Mapped["User"] = relationship(back_populates="tokens")    
