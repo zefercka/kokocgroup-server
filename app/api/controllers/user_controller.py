@@ -35,7 +35,7 @@ async def update_tokens(refresh_token: schemas.Token = Depends(user_service.get_
     return await user_service.new_tokens(db, refresh_token)
     
     
-@app.post("/auth/logout")
+@app.delete("/auth/logout")
 async def logout(refresh_token: str = Depends(user_service.get_current_token), db: AsyncSession = Depends(get_db)):
     await user_service.logout_user(db, refresh_token)
     

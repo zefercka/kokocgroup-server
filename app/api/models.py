@@ -55,3 +55,15 @@ class RefreshToken(Base):
     expire_date: Mapped[datetime]
     
     user: Mapped["User"] = relationship(back_populates="tokens")    
+    
+    
+class News(Base):
+    __tablename__ = "news"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(128))
+    event_date: Mapped[datetime]
+    news_date: Mapped[datetime]
+    content: Mapped[str]
+    category: Mapped[str]
+    image_url: Mapped[str] = mapped_column(String(256))

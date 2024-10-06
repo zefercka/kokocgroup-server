@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from config import settings
+from app.config import settings
 from ..schemas import Token
 import uuid
 

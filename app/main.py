@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.controllers.user_controller import app as user_controller
-from api.controllers.role_controller import app as role_controller
+from .api.controllers.user_controller import app as user_controller
+from .api.controllers.role_controller import app as role_controller
 
 app = FastAPI()
 
