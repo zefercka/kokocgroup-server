@@ -47,6 +47,11 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: kokoc
+      ACCESS_SECRET_KEY: 1d9a7b4577355c1e0c8d31edf503ef4d85e4b3f9f1c96506dde4ebc4a68d2885
+      REFRESH_SECRET_KEY: 1d9a7b4577355c1e0c8d31edf503ef4d85e4b3f9f1c96506dde4ebc4a68d2885
     depends_on:
       db:
         condition: service_healthy
