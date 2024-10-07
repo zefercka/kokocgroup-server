@@ -4,9 +4,12 @@ from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import models, schemas
+from .. import models
+from ..schemas.user import User, CreateUser, AuthorizedUser
+from ..schemas.authorization import Authorization
+from ..schemas.token import Token, SendToken
 from ..cruds.refresh_token import add_token, delete_token_obj, get_token
-from ..cruds.user import get_user_by_id, get_user_by_email, get_user_by_username, add_user
+from ..cruds.user import get_user_by_id, get_user_by_email, get_user_by_username, add_user, get_users
 from ..cruds.role import get_role_by_id
 from ..cruds.permission import get_permission
 from ..dependecies import hash, jwt
@@ -16,20 +19,20 @@ from ..dependecies.exceptions import InvalidToken, TokenExpired, TokenRevoked, U
 token_key = APIKeyHeader(name="Authorization")
 
 
-async def get_user(db: AsyncSession, user_id: int) -> models.User:
+async def get_user(db: AsyncSession, user_id: int) -> User:
     user = await get_user_by_id(db, user_id)
     if user is None:
         raise UserNotFound
     
-    return user
+    return User.model_validate(user)
 
 
-async def get_users(db: AsyncSession, limit: int, offset: int) -> list[models.User]:
+async def get_all_users(db: AsyncSession, limit: int, offset: int) -> list[models.User]:
     users = await get_users(db, limit, offset)
     return users
 
 
-async def register_user(db: AsyncSession, user_create: schemas.UserCreate) -> schemas.AuthorizedUser:
+async def register_user(db: AsyncSession, user_create: CreateUser) -> AuthorizedUser:
     is_unique_user = False if await get_user_by_email(db, user_create.email) or await get_user_by_username(db, user_create.username) else True
     
     if is_unique_user is False:
@@ -40,7 +43,7 @@ async def register_user(db: AsyncSession, user_create: schemas.UserCreate) -> sc
     
     await add_user(db, **user_create.model_dump())
     
-    data = schemas.Authorization(login=user_create.email, password=user_create.password)
+    data = Authorization(login=user_create.email, password=user_create.password)
     user = await authorize_user(db, data)
     
     return user
@@ -59,7 +62,7 @@ async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int):
     await db.commit()
     
 
-async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schemas.AuthorizedUser:
+async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUser:
     user = await authenticate_user(db, data.login, data.password)
     if not user:
         raise HTTPException(
@@ -74,7 +77,7 @@ async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schem
         db, token=refresh_token.token, expired_date=refresh_token.expires_at, user_id=user.id
     )
     
-    authorized_user = schemas.AuthorizedUser(
+    authorized_user = AuthorizedUser(
         user=user, access_token=access_token.token, expires_at=access_token.expires_at, refresh_token=refresh_token.token
     )
     
@@ -83,18 +86,18 @@ async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schem
     return authorized_user
  
 
-async def authenticate_user(db: AsyncSession, login: str, password: str) -> schemas.User | None:
+async def authenticate_user(db: AsyncSession, login: str, password: str) -> User | None:
     user = await get_user_by_username(db, username=login) or await get_user_by_email(db, email=login)
     if user is None:
         return None
 
     if await hash.verify_password(password, user.password_hash):
-        return schemas.User.model_validate(user)
+        return User.model_validate(user)
 
     return None
 
 
-async def logout_user(db: AsyncSession, token: schemas.Token):    
+async def logout_user(db: AsyncSession, token: Token):    
     try:
         token_type = await jwt.get_token_type(token=token)
         
@@ -117,7 +120,7 @@ async def logout_user(db: AsyncSession, token: schemas.Token):
         )
         
 
-async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> schemas.SendToken:
+async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
     try:
         user_id = await jwt.get_user_id(refresh_token)
         token = await get_token(db, token=refresh_token.token)
@@ -132,7 +135,7 @@ async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> schemas.
         
         await add_token(db, token=refresh_token.token, expired_date=refresh_token.expires_at, user_id=user_id)
         
-        token = schemas.SendToken(
+        token = SendToken(
             access_token=access_token.token, expires_at=access_token.expires_at, refresh_token=refresh_token.token
         )
         print(token)

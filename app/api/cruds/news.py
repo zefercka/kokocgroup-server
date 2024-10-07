@@ -9,6 +9,11 @@ async def get_news_by_id(db: AsyncSession, news_id: int):
     return results.scalars().first()
 
 
+async def get_all_news(db: AsyncSession, limit: int, offset: int):
+    results = await db.execute(select(News).order_by(News.news_date).limit(limit).offset(offset))
+    return results.scalars().all()
+
+
 async def add_news_action(db: AsyncSession, user_id: int, news_id: int, action_type: str):
     news_action = NewsAction(user_id=user_id, news_id=news_id, type=action_type)
     db.add(news_action)

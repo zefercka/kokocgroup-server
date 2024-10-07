@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas import Role
+from ..schemas.role import Role
 from ..dependecies.database import get_db
 from ..services import role_service
 
@@ -21,11 +21,8 @@ async def create_role(role: Role, db: AsyncSession = Depends(get_db)):
 
 
 @app.put("/{role_id}", response_model=Role)
-async def update_role(role_id: int, name: str | None = None, access_level: int | None = None, db: AsyncSession = Depends(get_db)):
+async def update_role(role_id: int, name: str, db: AsyncSession = Depends(get_db)):
     if name is not None:
         role = await role_service.update_name(db, role_id=role_id, name=name)
-    
-    if access_level is not None:
-        role = await role_service.update_access_level(db, role_id=role_id, access_level=access_level)
         
     return role

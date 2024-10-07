@@ -1,7 +1,7 @@
 import jwt
 from datetime import datetime, timedelta, timezone
 from app.config import settings
-from ..schemas import Token
+from ..schemas.token import Token
 import uuid
 
 ALGORITHM = "HS256"

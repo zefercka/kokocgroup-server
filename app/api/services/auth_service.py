@@ -4,8 +4,9 @@ from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import schemas
-from ..cruds.user import get_user_by_id
+from ..schemas.token import Token
+from ..schemas.user import User
+from ..cruds import user as crud
 from ..dependecies import jwt
 
 from ..dependecies.exceptions import InvalidToken, TokenExpired, UserNotFound
@@ -14,15 +15,15 @@ from ..dependecies.database import get_db
 token_key = APIKeyHeader(name="Authorization")
 
 
-async def get_current_token(auth_key: str = Security(token_key)) -> schemas.Token:
+async def get_current_token(auth_key: str = Security(token_key)) -> Token:
     token = auth_key.split()[-1]
-    return schemas.Token(token=token)
+    return Token(token=token)
 
 
-async def get_current_user(db: AsyncSession = Depends(get_db), token: schemas.Token = Depends(get_current_token)) -> schemas.User:    
+async def get_current_user(db: AsyncSession = Depends(get_db), token: Token = Depends(get_current_token)) -> User:    
     try:
         user_id = await jwt.get_user_id(token=token)            
-        user = await get_user_by_id(db, user_id=user_id)
+        user = await crud.get_user_by_id(db, user_id=user_id)
         
         if user is None:
             raise UserNotFound
