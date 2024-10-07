@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 from datetime import date
 from ..schemas.role import Role
@@ -21,7 +21,7 @@ class CreateUser(UserBase):
 
 class User(UserBase):
     id: int
-    roles: list["Role"]
+    # roles: Optional[List[Role]] = []
 
     class Config:
         from_attributes = True

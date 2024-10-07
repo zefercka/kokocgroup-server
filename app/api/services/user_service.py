@@ -92,7 +92,7 @@ async def authenticate_user(db: AsyncSession, login: str, password: str) -> User
         return None
 
     if await hash.verify_password(password, user.password_hash):
-        return User.model_validate(user)
+        return user
 
     return None
 
