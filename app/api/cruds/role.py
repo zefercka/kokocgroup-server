@@ -35,3 +35,8 @@ async def update_role_name(db: AsyncSession, role: Role, name: str) -> Role:
     await db.commit()
     
     return role
+
+
+# async def get_roles_by_permission(db: AsyncSession, permission: str) -> list[Role]:
+#     results = await db.execute(select(Role).where(permission in Role.permissions()))
+#     return results.scalars().all()

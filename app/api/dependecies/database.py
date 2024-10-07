@@ -15,7 +15,16 @@ SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 created_at = Annotated[datetime, mapped_column(server_default=func.now())]
 updated_at = Annotated[datetime, mapped_column(server_default=func.now(), onupdate=datetime.now)]
 
-class Base(AsyncAttrs, DeclarativeBase):
+
+class BaseClear(AsyncAttrs, DeclarativeBase):
+    __abstract__ = True
+
+    @declared_attr.directive
+    def __tablename__(cls) -> str:
+        return f"{cls.__name__.lower()}s"
+
+
+class Base(BaseClear):
     __abstract__ = True
 
     @declared_attr.directive
@@ -24,6 +33,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
+
     
 
 async def get_db():

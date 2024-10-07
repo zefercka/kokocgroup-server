@@ -49,3 +49,11 @@ class RoleNotFound(HTTPException):
             status_code = status.HTTP_404_NOT_FOUND,
             detail = "Роль не найдена"
         )
+        
+
+class NoPermissions(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code = status.HTTP_403_FORBIDDEN,
+            detail = "Нет разрешений"
+        )

@@ -1,5 +1,6 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import configparser
 
 
 class Settings(BaseSettings):
@@ -13,11 +14,17 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
     )
+    
+
+class Transactions:
+    CREATE_NEWS = "create news"
+    EDIT_NEWS = "edit news"
+    DELETE_NEWS = "delete news"
+    
 
 settings = Settings()
+transactions = Transactions()
 
 def get_db_url():
-    print(f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@"
-            f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}")
     return (f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@"
             f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}")

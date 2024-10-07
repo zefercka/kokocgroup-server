@@ -19,6 +19,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
+    roles: list["Role"]
 
     class Config:
         from_attributes = True
@@ -49,9 +50,24 @@ class AuthorizedUser(BaseModel):
 class Authorization(BaseModel):
     login: str
     password: str
-    
+
     
 class Role(BaseModel):
     id: int | None = None
     name: str
-    access_level: int
+    
+    class Config:
+        from_attributes = True
+    
+
+class News(BaseModel):
+    id: int | None = None
+    title: str
+    news_date: datetime
+    content: str
+    category: str
+    # Убрать None, а может и нет
+    image_url: str | None = None
+    
+    class Config:
+        from_attributes = True

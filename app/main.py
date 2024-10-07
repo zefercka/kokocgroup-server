@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.controllers.user_controller import app as user_controller
 from .api.controllers.role_controller import app as role_controller
+from .api.controllers.news_controller import app as news_controller
 
 app = FastAPI()
 
@@ -18,5 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user_controller, prefix='/api/v1/users', tags=['users'])
-app.include_router(role_controller, prefix='/api/v1/roles', tags=['roles'])
+app.include_router(user_controller, prefix="/api/v1/users", tags=["users"])
+app.include_router(role_controller, prefix="/api/v1/roles", tags=["roles"])
+app.include_router(news_controller, prefix="/api/v1/news", tags=["news"])

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import schemas
 from ..dependecies.database import get_db
-from ..services import user_service
+from ..services import user_service, auth_service
 
 app = APIRouter()
 
@@ -30,17 +30,22 @@ async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db))
     
     
 @app.post("/auth/refresh", response_model=schemas.SendToken)
-async def update_tokens(refresh_token: schemas.Token = Depends(user_service.get_current_token),  db: AsyncSession = Depends(get_db)):
+async def update_tokens(refresh_token: schemas.Token = Depends(auth_service.get_current_token),  db: AsyncSession = Depends(get_db)):
     print(refresh_token.token)
     return await user_service.new_tokens(db, refresh_token)
     
     
 @app.delete("/auth/logout")
-async def logout(refresh_token: str = Depends(user_service.get_current_token), db: AsyncSession = Depends(get_db)):
+async def logout(refresh_token: str = Depends(auth_service.get_current_token), db: AsyncSession = Depends(get_db)):
     await user_service.logout_user(db, refresh_token)
     
     
 @app.post("/{user_id}/roles/{role_id}")
 async def add_role_to_user(user_id: int, role_id: int, db: AsyncSession = Depends(get_db)):
     await user_service.add_role_to_user(db, user_id, role_id)
+    
+
+# Delete after
+# @app.post("/permission")
+# async def add_permission(user_id: int, permission_id: int, db: AsyncSession = Depends(get_db)):
     

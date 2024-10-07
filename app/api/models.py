@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlalchemy import String, func, ForeignKey, Table, Column
-from sqlalchemy.orm import Mapped, mapped_column, relationship, Relationship
-from .dependecies.database import Base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from .dependecies.database import Base, BaseClear
 from datetime import date, datetime
 
 
@@ -10,6 +10,13 @@ users_roles = Table(
     Base.metadata,
     Column("user_id", ForeignKey("users.id"), primary_key=True),
     Column("role_id", ForeignKey("roles.id"), primary_key=True)
+)
+
+roles_permissions = Table(
+    "roles_permissions",
+    Base.metadata,
+    Column("role_id", ForeignKey("roles.id"), primary_key=True),
+    Column("permission", ForeignKey("permissions.name"), primary_key=True)
 )
 
 
@@ -40,10 +47,13 @@ class Role(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256))
-    access_level: Mapped[int]
     
     users: Mapped[List["User"]] = relationship(
         secondary=users_roles, back_populates="roles", lazy="selectin"
+    )
+    
+    permissions: Mapped[List["Permission"]] = relationship(
+        secondary="roles_permissions", back_populates="roles", lazy="selectin"
     )
 
 
@@ -62,8 +72,29 @@ class News(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(128))
-    event_date: Mapped[datetime]
     news_date: Mapped[datetime]
     content: Mapped[str]
     category: Mapped[str]
     image_url: Mapped[str] = mapped_column(String(256))
+    
+
+class NewsAction(Base):
+    __tablename__ = "news_actions"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    news_id: Mapped[int] = mapped_column(ForeignKey("news.id"))
+    # "create", "edit"
+    type: Mapped[str] = mapped_column(String(8))
+    
+
+class Permission(BaseClear):
+    __tablename__ = "permissions"
+    
+    name: Mapped[str] = mapped_column(String(256), primary_key=True)
+    
+    roles: Mapped[List["Role"]] = relationship(
+        secondary="roles_permissions", back_populates="permissions", lazy="selectin"
+    )
+
+    

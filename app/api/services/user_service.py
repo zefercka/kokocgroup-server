@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import HTTPException, status
 from fastapi.security import APIKeyHeader
 from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
@@ -8,10 +8,10 @@ from .. import models, schemas
 from ..cruds.refresh_token import add_token, delete_token_obj, get_token
 from ..cruds.user import get_user_by_id, get_user_by_email, get_user_by_username, add_user
 from ..cruds.role import get_role_by_id
+from ..cruds.permission import get_permission
 from ..dependecies import hash, jwt
 
 from ..dependecies.exceptions import InvalidToken, TokenExpired, TokenRevoked, UnexpectedTokenType, UserNotFound, RoleNotFound
-from ..dependecies.database import get_db
 
 token_key = APIKeyHeader(name="Authorization")
 
@@ -22,6 +22,7 @@ async def get_user(db: AsyncSession, user_id: int) -> models.User:
         raise UserNotFound
     
     return user
+
 
 async def get_users(db: AsyncSession, limit: int, offset: int) -> list[models.User]:
     users = await get_users(db, limit, offset)
@@ -43,6 +44,19 @@ async def register_user(db: AsyncSession, user_create: schemas.UserCreate) -> sc
     user = await authorize_user(db, data)
     
     return user
+
+        
+async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int):
+    user = await get_user_by_id(db, user_id)
+    if user is None:
+        raise UserNotFound
+    
+    role = await get_role_by_id(db, role_id)
+    if role is None:
+        raise RoleNotFound
+    
+    user.roles.append(role)
+    await db.commit()
     
 
 async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schemas.AuthorizedUser:
@@ -69,13 +83,13 @@ async def authorize_user(db: AsyncSession, data: schemas.Authorization) -> schem
     return authorized_user
  
 
-async def authenticate_user(db: AsyncSession, login: str, password: str) -> models.User | None:
+async def authenticate_user(db: AsyncSession, login: str, password: str) -> schemas.User | None:
     user = await get_user_by_username(db, username=login) or await get_user_by_email(db, email=login)
     if user is None:
         return None
 
     if await hash.verify_password(password, user.password_hash):
-        return user
+        return schemas.User.model_validate(user)
 
     return None
 
@@ -101,34 +115,7 @@ async def logout_user(db: AsyncSession, token: schemas.Token):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка обработки токена"
         )
-
-
-async def get_current_token(auth_key: str = Security(token_key)) -> schemas.Token:
-    token = auth_key.split()[-1]
-    return schemas.Token(token=token)
-
-
-async def get_current_user(db: AsyncSession = Depends(get_db), token: schemas.Token = Depends(get_current_token)) -> models.User:    
-    try:
-        user_id = await jwt.get_user_id(token=token)            
-        user = await get_user_by_id(db, user_id=user_id)
         
-        if user is None:
-            raise UserNotFound
-        
-        return user
-        
-    except ExpiredSignatureError:
-        raise TokenExpired
-    except DecodeError:
-        raise InvalidToken
-    except InvalidTokenError as err:
-        print(err)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка обработки токена"
-        )
-
 
 async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> schemas.SendToken:
     try:
@@ -162,15 +149,10 @@ async def new_tokens(db: AsyncSession, refresh_token: schemas.Token) -> schemas.
             detail="Ошибка обработки токена"
         )
         
-        
-async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int):
-    user = await get_user_by_id(db, user_id)
-    if user is None:
-        raise UserNotFound
+
+async def check_user_permission(db: AsyncSession, user: models.User, permission: str) -> bool:
+    permission = await get_permission(db, permission=permission)
     
-    role = await get_role_by_id(db, role_id)
-    if role is None:
-        raise RoleNotFound
-    
-    user.roles.append(role)
-    await db.commit()
+    if any(role in permission.roles for role in user.roles):
+        return True
+    return False
