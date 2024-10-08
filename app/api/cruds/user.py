@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies import hash
-from ..models import User
+from ..models import User, Role
 
 
 async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
@@ -36,6 +36,22 @@ async def add_user(db: AsyncSession, username: str, email: str, first_name: str,
         date_of_birth=date_of_birth, patronymic=patronymic, password_hash=password_hash,
         phone_number=phone_number, avatar_url=avatar_url)
     db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    
+    return user
+
+
+async def add_role_to_user(db: AsyncSession, user: User, role: Role) -> User:
+    user.roles.append(role)
+    await db.commit()
+    await db.refresh(user)
+    
+    return user
+
+
+async def remove_role_user(db: AsyncSession, user: User, role: Role) -> User:
+    user.roles.remove(role)
     await db.commit()
     await db.refresh(user)
     

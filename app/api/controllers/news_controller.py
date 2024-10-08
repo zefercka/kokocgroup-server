@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
@@ -15,10 +16,11 @@ async def get_news_categories(db: AsyncSession = Depends(get_db)):
     return categories
 
 
-@app.get("/", response_model=list[News])
+# response_model=list[News]
+@app.get("/", )
 async def get_all_news(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)):
     news = await news_service.get_all_news(db, limit, offset)
-    return news
+    return {"data": news}
 
 
 @app.get("/{news_id}", response_model=News)

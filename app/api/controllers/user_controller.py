@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.user import SendUser
-from ..services import user_service
+from ..schemas.user import SendUser, User
+from ..services import user_service, auth_service
 
 app = APIRouter()
 
@@ -23,6 +23,15 @@ async def get_users(limit: int = 50, offset: int = 0, db: AsyncSession = Depends
 async def add_role_to_user(user_id: int, role_id: int, db: AsyncSession = Depends(get_db)):
     await user_service.add_role_to_user(db, user_id, role_id)
     
+
+@app.delete("/{user_id}/roles/{role_id}", response_model=SendUser)
+async def remove_role_user(user_id: int, role_id: int, current_user: User = Depends(auth_service.get_current_user), 
+                           db: AsyncSession = Depends(get_db)):
+    user = await user_service.remove_role_user(
+        db, current_user=current_user, user_id=user_id, role_id=role_id
+    )
+    return user
+
 
 # Delete after
 # @app.post("/permission")

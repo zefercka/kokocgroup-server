@@ -22,6 +22,7 @@ class Transactions:
     EDIT_NEWS = "edit_news"
     DELETE_NEWS = "delete_news"
     UPLOAD_IMAGE = "upload_image"
+    REMOVE_ROLE = "remove_role"
     
 
 settings = Settings()

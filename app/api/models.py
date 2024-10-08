@@ -41,10 +41,6 @@ class User(Base):
     roles: Mapped[List["Role"]] = relationship(
         secondary="users_roles", back_populates="users", lazy="selectin"
     )
-
-    async def get_permissions(roles):
-        permissions = [role.permissions for role in roles]
-        return [permission.name for permission in permissions]
     
 
 class Role(BaseClear):
