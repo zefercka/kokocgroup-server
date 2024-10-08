@@ -1,6 +1,7 @@
-from ..models import Permission
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..models import Permission
 
 
 async def get_permission(db: AsyncSession, permission: str):

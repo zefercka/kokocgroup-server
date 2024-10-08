@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas.role import Role
 from ..dependecies.database import get_db
+from ..schemas.role import Role
 from ..services import role_service
 
 app = APIRouter()

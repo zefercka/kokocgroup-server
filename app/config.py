@@ -1,6 +1,6 @@
 import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import configparser
 
 
 class Settings(BaseSettings):
@@ -11,15 +11,17 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     ACCESS_SECRET_KEY: str
     REFRESH_SECRET_KEY: str
+    IMAGES_PATH: str
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
     )
     
 
 class Transactions:
-    CREATE_NEWS = "create news"
-    EDIT_NEWS = "edit news"
-    DELETE_NEWS = "delete news"
+    CREATE_NEWS = "create_news"
+    EDIT_NEWS = "edit_news"
+    DELETE_NEWS = "delete_news"
+    UPLOAD_IMAGE = "upload_image"
     
 
 settings = Settings()

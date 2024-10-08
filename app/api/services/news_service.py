@@ -1,13 +1,13 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.config import transactions
+
+from ..cruds import news as crud
+from ..dependecies.exceptions import NoPermissions
 from ..schemas.news import News
 from ..schemas.user import User
-from ..cruds import news as crud
-from app.config import transactions
 from ..services.user_service import check_user_permission
-from ..dependecies.exceptions import NoPermissions
-
 
 CATEGORY_NOT_FOUND = "Category not found"
 NEWS_NOT_FOUND = "News not found"

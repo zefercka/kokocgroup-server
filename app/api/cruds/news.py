@@ -1,7 +1,9 @@
-from ..models import News, NewsAction, NewsCategory
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..models import News, NewsAction, NewsCategory
 
 
 async def get_news_by_id(db: AsyncSession, news_id: int):

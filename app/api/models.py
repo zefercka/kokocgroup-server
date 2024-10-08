@@ -1,22 +1,23 @@
-from typing import Optional, List
-from sqlalchemy import String, func, ForeignKey, Table, Column
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .dependecies.database import Base, BaseClear
 from datetime import date, datetime
+from typing import List, Optional
 
+from sqlalchemy import Column, ForeignKey, String, Table, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .dependecies.database import Base, BaseClear
 
 users_roles = Table(
     "users_roles",
     Base.metadata,
-    Column("user_id", ForeignKey("users.id"), primary_key=True),
-    Column("role_id", ForeignKey("roles.id"), primary_key=True)
+    Column("user_id", ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"), primary_key=True),
+    Column("role_id", ForeignKey("roles.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
 )
 
 roles_permissions = Table(
     "roles_permissions",
     Base.metadata,
-    Column("role_id", ForeignKey("roles.id"), primary_key=True),
-    Column("permission", ForeignKey("permissions.name"), primary_key=True)
+    Column("role_id", ForeignKey("roles.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("permission", ForeignKey("permissions.name", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
 )
 
 
@@ -121,3 +122,10 @@ class NewsCategory(BaseClear):
     news: Mapped["News"] = relationship(
         back_populates="category"
     )
+    
+
+class FileUpload(Base):
+    __tablename__ = "file_uploads"
+    
+    file_name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] =  mapped_column(ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"))

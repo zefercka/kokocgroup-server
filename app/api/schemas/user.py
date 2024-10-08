@@ -1,8 +1,9 @@
+from datetime import date, datetime
 from typing import Optional
+
 from pydantic import BaseModel, field_validator, model_validator
-from datetime import date
+
 from ..schemas.role import Role
-from datetime import datetime
 
 
 class UserBase(BaseModel):
@@ -40,18 +41,15 @@ class User(UserBase):
                 permissions.extend(role.permissions)
             values.permissions = list(set(permissions))
         return values
-    
-    # @field_validator("permissions", "roles", mode="after")
-    # def adjust_permissions(roles):
-    #     permissions = []
-    #     for role in roles:
-    #         permissions.extend(role.permissions)
-    #     print(permissions)
-    #     return list(set(permissions))
+
+
+class SendUser(UserBase):
+    id: int
+    permissions: list[str]
         
 
 class AuthorizedUser(BaseModel):
     access_token: str
     expires_at: datetime
     refresh_token: str
-    user: User
+    user: SendUser

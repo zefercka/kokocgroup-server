@@ -1,8 +1,11 @@
-import jwt
-from datetime import datetime, timedelta, timezone
-from app.config import settings
-from ..schemas.token import Token
 import uuid
+from datetime import datetime, timedelta, timezone
+
+import jwt
+
+from app.config import settings
+
+from ..schemas.token import Token
 
 ALGORITHM = "HS256"
 # JWT (подумать куда вынести)

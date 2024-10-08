@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas.role import Role
-from ..cruds import role as crud 
+from ..cruds import role as crud
 from ..dependecies.exceptions import RoleNotFound
+from ..schemas.role import Role
 
 
 async def create_role(db: AsyncSession, role: Role) -> Role:

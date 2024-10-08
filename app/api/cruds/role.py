@@ -1,7 +1,7 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from ..models import Role
-from datetime import datetime
 
 
 async def get_role_by_id(db: AsyncSession, role_id: int) -> Role | None:

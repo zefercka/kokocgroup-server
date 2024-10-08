@@ -1,25 +1,18 @@
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
-
 from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..cruds import refresh_token as token_crud, user as crud
-from ..dependecies import jwt, hash
+from ..cruds import refresh_token as token_crud
+from ..cruds import user as crud
+from ..dependecies import hash, jwt
 from ..dependecies.database import get_db
-from ..dependecies.exceptions import (
-    InvalidToken,
-    TokenExpired,
-    TokenRevoked,
-    UnexpectedTokenType,
-    UserNotFound
-)
-
+from ..dependecies.exceptions import (InvalidToken, TokenExpired, TokenRevoked,
+                                      UnexpectedTokenType, UserNotFound)
 from ..schemas.authorization import Authorization
 from ..schemas.token import SendToken, Token
-from ..schemas.user import AuthorizedUser, CreateUser, User
+from ..schemas.user import AuthorizedUser, CreateUser, SendUser, User
 
 token_key = APIKeyHeader(name="Authorization")
 
@@ -39,6 +32,7 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
         db, token=refresh_token.token, expired_date=refresh_token.expires_at, user_id=user.id
     )
     
+    user = SendUser.model_validate(user.model_dump(exclude=["roles"]))
     authorized_user = AuthorizedUser(
         user=user, access_token=access_token.token, expires_at=access_token.expires_at, refresh_token=refresh_token.token
     )
@@ -139,6 +133,7 @@ async def get_current_token(auth_key: str = Security(token_key)) -> Token:
 
 async def get_current_user(db: AsyncSession = Depends(get_db), token: Token = Depends(get_current_token)) -> User:    
     try:
+        
         user_id = await jwt.get_user_id(token=token)            
         user = await crud.get_user_by_id(db, user_id=user_id)
         

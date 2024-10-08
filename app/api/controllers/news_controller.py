@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..dependecies.database import get_db
 from ..schemas.news import CreateNews, News
 from ..schemas.user import User
-from ..dependecies.database import get_db
-from ..services import news_service, auth_service
+from ..services import auth_service, news_service
 
 app = APIRouter()
 

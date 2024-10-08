@@ -1,7 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from ..models import RefreshToken
 from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..models import RefreshToken
+
 
 async def get_token(db: AsyncSession, token: str):
     results = await db.execute(select(RefreshToken).where(RefreshToken.token == token))
