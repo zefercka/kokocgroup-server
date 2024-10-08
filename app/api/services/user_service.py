@@ -26,7 +26,7 @@ async def get_all_users(db: AsyncSession, limit: int, offset: int) -> list[User]
     return users
 
         
-async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int):
+async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int) -> User:
     user = await crud.get_user_by_id(db, user_id)
     if user is None:
         raise UserNotFound
@@ -41,7 +41,8 @@ async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int):
             detail="User already has this role"
         )
     
-    return await crud.add_role_to_user(db, user=user, role=role)
+    user = await crud.add_role_to_user(db, user=user, role=role)
+    return User.model_validate(user)
         
 
 async def remove_role_user(db: AsyncSession, current_user: User, user_id: int, role_id: int) -> User:

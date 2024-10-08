@@ -21,7 +21,8 @@ async def get_users(limit: int = 50, offset: int = 0, db: AsyncSession = Depends
     
 @app.post("/{user_id}/roles/{role_id}")
 async def add_role_to_user(user_id: int, role_id: int, db: AsyncSession = Depends(get_db)):
-    await user_service.add_role_to_user(db, user_id, role_id)
+    user = await user_service.add_role_to_user(db, user_id, role_id)
+    return user
     
 
 @app.delete("/{user_id}/roles/{role_id}", response_model=SendUser)
