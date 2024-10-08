@@ -16,11 +16,10 @@ async def get_news_categories(db: AsyncSession = Depends(get_db)):
     return categories
 
 
-# response_model=list[News]
-@app.get("/", )
+@app.get("/", response_model=list[News])
 async def get_all_news(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)):
     news = await news_service.get_all_news(db, limit, offset)
-    return {"data": news}
+    return news
 
 
 @app.get("/{news_id}", response_model=News)
