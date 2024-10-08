@@ -20,6 +20,12 @@ async def create_role(role: Role, db: AsyncSession = Depends(get_db)):
     return role 
 
 
+@app.get("/{role_id}", response_model=Role)
+async def get_role(role_id: int, db: AsyncSession = Depends(get_db)):
+    role = await role_service.get_role(db, role_id=role_id)
+    return role
+
+
 @app.put("/{role_id}", response_model=Role)
 async def update_role(role_id: int, name: str, db: AsyncSession = Depends(get_db)):
     if name is not None:

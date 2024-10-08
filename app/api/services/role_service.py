@@ -22,3 +22,8 @@ async def update_name(db: AsyncSession, role_id: int, name: str) -> Role:
     
     role = await crud.update_role_name(db, role, name)
     return Role.model_validate(role)
+
+
+async def get_role(db: AsyncSession, role_id: int) -> Role:
+    role = await crud.get_role_by_id(db, role_id)
+    return role

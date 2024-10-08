@@ -1,5 +1,5 @@
-from typing import Optional, List
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, field_validator
 from datetime import date
 from ..schemas.role import Role
 from datetime import datetime
@@ -21,10 +21,14 @@ class CreateUser(UserBase):
 
 class User(UserBase):
     id: int
-    # roles: Optional[List[Role]] = []
+    roles: list[Role]
 
     class Config:
         from_attributes = True
+    
+    @field_validator("roles", mode="before")
+    def adjust_roles(roles):
+        return [Role(id=role.id, name=role.name, permissions=role.permissions) for role in roles]
         
 
 class AuthorizedUser(BaseModel):

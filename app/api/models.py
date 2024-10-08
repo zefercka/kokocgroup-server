@@ -6,7 +6,7 @@ from datetime import date, datetime
 
 
 users_roles = Table(
-    "user_roles",
+    "users_roles",
     Base.metadata,
     Column("user_id", ForeignKey("users.id"), primary_key=True),
     Column("role_id", ForeignKey("roles.id"), primary_key=True)
@@ -38,22 +38,26 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     roles: Mapped[List["Role"]] = relationship(
-        secondary=users_roles, back_populates="users", lazy="selectin"
+        secondary="users_roles", back_populates="users", lazy="selectin"
     )
+
+    async def get_permissions(roles):
+        permissions = [role.permissions for role in roles]
+        return [permission.name for permission in permissions]
     
 
-class Role(Base):
+class Role(BaseClear):
     __tablename__ = "roles"
     
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(256))
     
     users: Mapped[List["User"]] = relationship(
-        secondary=users_roles, back_populates="roles", lazy="selectin"
+        secondary="users_roles", back_populates="roles", lazy="selectin"
     )
     
     permissions: Mapped[List["Permission"]] = relationship(
-        secondary="roles_permissions", back_populates="roles", lazy="selectin"
+        secondary="roles_permissions", back_populates="roles", lazy="joined"
     )
 
 
@@ -77,6 +81,10 @@ class News(Base):
     category: Mapped[str]
     image_url: Mapped[str] = mapped_column(String(256))
     
+    news_actions: Mapped["NewsAction"] = relationship(
+        back_populates="news", cascade="all, delete-orphan"
+    )
+    
 
 class NewsAction(Base):
     __tablename__ = "news_actions"
@@ -86,6 +94,8 @@ class NewsAction(Base):
     news_id: Mapped[int] = mapped_column(ForeignKey("news.id"))
     # "create", "edit"
     type: Mapped[str] = mapped_column(String(8))
+    
+    news: Mapped["News"] = relationship(back_populates="news_actions")
     
 
 class Permission(BaseClear):

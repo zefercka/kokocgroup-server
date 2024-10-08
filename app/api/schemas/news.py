@@ -11,11 +11,11 @@ class BaseNews(BaseModel):
     image_url: Optional[str] = "url"
     
 
-class CreateNews(BaseModel):
+class CreateNews(BaseNews):
     pass
 
 
-class News(BaseModel):
+class News(BaseNews):
     id: int
     
     class Config:

@@ -35,3 +35,8 @@ async def add_news(db: AsyncSession, user_id: int, title: str, news_date: dateti
     await add_news_action(db, user_id=user_id, news_id=news.id, action_type="create")
     
     return news
+
+
+async def delete_news(db: AsyncSession, news: News):
+    db.delete(news)
+    await db.commit()
