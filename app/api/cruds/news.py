@@ -11,7 +11,7 @@ async def get_news_by_id(db: AsyncSession, news_id: int):
 
 async def get_all_news(db: AsyncSession, limit: int, offset: int):
     # Сортировка в другом порядке мб
-    results = await db.execute(select(News).order_by(News.news_date).limit(limit).offset(offset))
+    results = await db.execute(select(News).where(News.news_date<=datetime.now()).order_by(News.news_date).limit(limit).offset(offset))
     return results.scalars().all()
 
 
@@ -28,10 +28,10 @@ async def add_news_action(db: AsyncSession, user_id: int, news_id: int, action_t
     return news_action
 
 
-async def add_news(db: AsyncSession, user_id: int, title: str, news_date: datetime, content: str, category: str,
+async def add_news(db: AsyncSession, user_id: int, title: str, news_date: datetime, content: str, category_name: str,
                    image_url: str = "default"):
     news = News(
-        title=title, news_date=news_date.replace(tzinfo=None), content=content, category=category, image_url=image_url
+        title=title, news_date=news_date.replace(tzinfo=None), content=content, category_name=category_name, image_url=image_url
     )
 
     db.add(news)
