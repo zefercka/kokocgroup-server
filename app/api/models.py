@@ -78,11 +78,14 @@ class News(Base):
     title: Mapped[str] = mapped_column(String(128))
     news_date: Mapped[datetime]
     content: Mapped[str]
-    category: Mapped[str]
+    category_name: Mapped[str] = mapped_column(ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE"))
     image_url: Mapped[str] = mapped_column(String(256))
     
     news_actions: Mapped["NewsAction"] = relationship(
         back_populates="news", cascade="all, delete-orphan"
+    )
+    category: Mapped["NewsCategory"] = relationship(
+        back_populates="news"
     )
     
 
@@ -90,12 +93,14 @@ class NewsAction(Base):
     __tablename__ = "news_actions"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    news_id: Mapped[int] = mapped_column(ForeignKey("news.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"))
+    news_id: Mapped[int] = mapped_column(ForeignKey("news.id", ondelete="NO ACTION", onupdate="CASCADE"))
     # "create", "edit"
     type: Mapped[str] = mapped_column(String(8))
     
-    news: Mapped["News"] = relationship(back_populates="news_actions")
+    news: Mapped["News"] = relationship(
+        back_populates="news_actions"
+    )
     
 
 class Permission(BaseClear):
@@ -107,4 +112,12 @@ class Permission(BaseClear):
         secondary="roles_permissions", back_populates="permissions", lazy="selectin"
     )
 
+
+class NewsCategory(BaseClear):
+    __tablename__ = "news_categories"
     
+    name: Mapped[str] = mapped_column(String(32), primary_key=True)
+    
+    news: Mapped["News"] = relationship(
+        back_populates="category"
+    )

@@ -7,7 +7,7 @@ class BaseNews(BaseModel):
     title: str
     news_date: datetime
     content: str
-    category: str
+    category_name: str
     image_url: Optional[str] = "url"
     
 
