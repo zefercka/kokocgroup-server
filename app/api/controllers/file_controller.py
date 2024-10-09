@@ -16,7 +16,7 @@ async def upload_image(image: UploadFile, current_user: User = Depends(auth_serv
     return file_name
     
 
-@app.get("/{file_name}", response_class=FileResponse)
+@app.get("/images/{file_name}", response_class=FileResponse)
 async def get_image(file_name: str):
     file = await file_service.get_image(file_name)
     return file

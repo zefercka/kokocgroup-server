@@ -14,6 +14,7 @@ class UserBase(BaseModel):
     patronymic: Optional[str] = None
     date_of_birth: date
     phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class CreateUser(UserBase):

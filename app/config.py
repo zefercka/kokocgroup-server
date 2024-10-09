@@ -25,8 +25,26 @@ class Transactions:
     REMOVE_ROLE = "remove_role"
     
 
+class TeamMemberSettings:
+    # Играют в текущем составе
+    PRESENT_STATUS = "present"
+    # Были в составе раннее, но сейчас не играют
+    PAST_STATUS = "past"
+    
+    ADMIN_ROLE = "admin"
+    TRAINER_ROLE = "trainer"
+    PLAYER_ROLE = "player"
+    
+    GOALKEPPER_POSITION = "голкиппер"
+    DEFENDER_POSITION = "защитник"
+    MIDFIELDERS_POSITION = "полузащитник"
+    STRIKER_POSITION = "нападающий"
+    
+    
+
 settings = Settings()
 transactions = Transactions()
+team_member_settings = TeamMemberSettings()
 
 def get_db_url():
     return (f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@"

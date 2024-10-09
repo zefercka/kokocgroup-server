@@ -15,7 +15,7 @@ NEWS_NOT_FOUND = "News not found"
 
 async def get_news(db: AsyncSession, news_id: int) -> News:
     news = await crud.get_news_by_id(db, news_id=news_id)
-    return news
+    return News.model_validate(news)
 
 
 async def get_all_news(db: AsyncSession, limit: int, offset: int) -> list[News]:
@@ -34,7 +34,7 @@ async def create_news(db: AsyncSession, news: News, current_user: User) -> News:
         )
     
     news = await crud.add_news(db, user_id=current_user.id, **news.model_dump(exclude=["id"]))
-    return news
+    return News.model_validate(news)
     
 
 async def delete_news(db: AsyncSession, news_id: int, current_user: User):

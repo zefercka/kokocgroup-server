@@ -125,3 +125,17 @@ class FileUpload(Base):
     
     file_name: Mapped[str] = mapped_column(String(64), primary_key=True)
     user_id: Mapped[int] =  mapped_column(ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"))
+    
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
+    status: Mapped[str]
+    role: Mapped[str]
+    position: Mapped[str] = mapped_column(nullable=True)
+    height: Mapped[int] = mapped_column(nullable=True)
+    weight: Mapped[int] = mapped_column(nullable=True)
+    
+    user: Mapped["User"] = relationship(lazy="selectin")
