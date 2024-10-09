@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import transactions, db_constants
 
 from ..cruds import news as crud
-from ..dependecies.exceptions import NoPermissions
+from ..dependecies.exceptions import NoPermissions, NewsNotFound
 from ..schemas.news import News
 from ..schemas.user import User
 from ..services.user_service import check_user_permission
@@ -17,9 +17,7 @@ async def get_news(db: AsyncSession, news_id: int) -> News:
     news = await crud.get_news_by_id(db, news_id=news_id)
     
     if news is None:
-        raise HTTPException(
-            status_code=404, detail=NEWS_NOT_FOUND
-        )
+        raise NewsNotFound
     # if news.status == db_constants.NEWS_UNAVAILABLE and current_user is not None:
     #     if await check_user_permission()
     

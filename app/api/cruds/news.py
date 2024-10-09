@@ -21,7 +21,7 @@ async def get_all_news(db: AsyncSession, limit: int, offset: int, year: int | No
             News.news_date<=datetime.now(), 
             News.status == db_constants.NEWS_AVAILABLE
         )
-    ).order_by(News.news_date.desc()).offset(offset).limit(limit)
+    ).order_by(News.news_date.desc(), News.id.asc()).offset(offset).limit(limit)
     if year is not None:
         query = query.where(extract("year", News.news_date) == year)
     if month is not None:
