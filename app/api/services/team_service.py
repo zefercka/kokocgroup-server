@@ -14,6 +14,13 @@ async def get_all_active_team_members(db: AsyncSession):
     return team
 
 
+async def get_all_inactive_team_members(db: AsyncSession):
+    members = await crud.get_all_inactive_team_members(db)
+    team = await validate_team_model(members=members)
+    
+    return team
+
+
 async def validate_team_model(members: list[TeamMember]) -> Team:
     team_members: dict[str, list[Member]] = {
         "trainers": [],

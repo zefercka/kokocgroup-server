@@ -1,9 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import extract, select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import db_constants
+
 from ..models import News, NewsAction, NewsCategory
+
+from app.config import db_constants
 
 
 async def get_news_by_id(db: AsyncSession, news_id: int):
@@ -11,8 +15,18 @@ async def get_news_by_id(db: AsyncSession, news_id: int):
     return results.scalars().first()
 
 
-async def get_all_news(db: AsyncSession, limit: int, offset: int):
-    results = await db.execute(select(News).where(News.news_date<=datetime.now()).order_by(News.news_date.desc()).limit(limit).offset(offset))
+async def get_all_news(db: AsyncSession, limit: int, offset: int, year: int | None, month: int | None):
+    query = select(News).where(
+        and_(
+            News.news_date<=datetime.now(), 
+            News.status == db_constants.NEWS_AVAILABLE
+        )
+    ).order_by(News.news_date.desc()).offset(offset).limit(limit)
+    if year is not None:
+        query = query.where(extract("year", News.news_date) == year)
+    if month is not None:
+        query = query.where(extract("month", News.news_date) == month)
+    results = await db.execute(query)
     return results.scalars().all()
 
 
@@ -44,12 +58,18 @@ async def add_news(db: AsyncSession, user_id: int, title: str, news_date: dateti
     return news
 
 
-async def delete_news(db: AsyncSession, news: News):
-    db.delete(news)
-    await db.commit()
+async def delete_news(db: AsyncSession, user_id: int, news: News):
+    if news.status == db_constants.NEWS_AVAILABLE:
+        news.status = db_constants.NEWS_UNAVAILABLE
+        await db.commit()
+        await add_news_action(db, user_id=user_id, news_id=news.id, action_type="delete")
+    elif news.status == db_constants.NEWS_UNAVAILABLE:
+        await db.delete(news)
+        await db.commit()
+
+        
     
-    
-async def update_news(db: AsyncSession, news: News, title: str, news_date: str, content: str, 
+async def update_news(db: AsyncSession, user_id, news: News, title: str, news_date: str, content: str, 
                       category_name: str, image_url: str) -> News | None:    
     news.title = title
     news.news_date = news_date.replace(tzinfo=None)
@@ -58,6 +78,8 @@ async def update_news(db: AsyncSession, news: News, title: str, news_date: str, 
     news.image_url = image_url
     await db.commit()
     await db.refresh(news)
+    
+    await add_news_action(db, user_id=user_id, news_id=news.id, action_type="edit")
     
     return news
     

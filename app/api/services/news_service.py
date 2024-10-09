@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import transactions
+from app.config import transactions, db_constants
 
 from ..cruds import news as crud
 from ..dependecies.exceptions import NoPermissions
@@ -15,11 +15,19 @@ NEWS_NOT_FOUND = "News not found"
 
 async def get_news(db: AsyncSession, news_id: int) -> News:
     news = await crud.get_news_by_id(db, news_id=news_id)
+    
+    if news is None:
+        raise HTTPException(
+            status_code=404, detail=NEWS_NOT_FOUND
+        )
+    # if news.status == db_constants.NEWS_UNAVAILABLE and current_user is not None:
+    #     if await check_user_permission()
+    
     return News.model_validate(news)
 
 
-async def get_all_news(db: AsyncSession, limit: int, offset: int) -> list[News]:
-    news = await crud.get_all_news(db, limit=limit, offset=offset)
+async def get_all_news(db: AsyncSession, limit: int, offset: int, year: int | None, month: int | None) -> list[News]:
+    news = await crud.get_all_news(db, limit=limit, offset=offset, year=year, month=month)
     return news
 
 
@@ -39,7 +47,7 @@ async def create_news(db: AsyncSession, news: News, current_user: User) -> News:
 
 async def delete_news(db: AsyncSession, news_id: int, current_user: User):
     if not await check_user_permission(current_user, transactions.DELETE_NEWS):
-        return NoPermissions
+        raise NoPermissions
     
     news = await crud.get_news_by_id(db, news_id=news_id)
     if news is None:
@@ -47,7 +55,7 @@ async def delete_news(db: AsyncSession, news_id: int, current_user: User):
             status_code=404, detail=NEWS_NOT_FOUND
         )
     
-    await crud.delete_news(db, news=news)
+    await crud.delete_news(db, user_id=current_user.id, news=news)
     
 
 async def update_news(db: AsyncSession, news: News, current_user: User) -> News:
@@ -66,7 +74,7 @@ async def update_news(db: AsyncSession, news: News, current_user: User) -> News:
             status_code=404, detail=CATEGORY_NOT_FOUND
         )
     
-    news = await crud.update_news(db, news=old_news, **news.model_dump(exclude=["id"]))
+    news = await crud.update_news(db, user_id=current_user.id, news=old_news, **news.model_dump(exclude=["id"]))
     return news
 
 

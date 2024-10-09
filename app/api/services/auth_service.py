@@ -151,4 +151,4 @@ async def get_current_user(db: AsyncSession = Depends(get_db), token: Token = De
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка обработки токена"
-        )        
+        )

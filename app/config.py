@@ -23,6 +23,7 @@ class Transactions:
     DELETE_NEWS = "delete_news"
     UPLOAD_IMAGE = "upload_image"
     REMOVE_ROLE = "remove_role"
+    VIEW_DELETED_NEWS = "view_deleted_news"
     
 
 class TeamMemberSettings:
@@ -39,12 +40,18 @@ class TeamMemberSettings:
     DEFENDER_POSITION = "защитник"
     MIDFIELDERS_POSITION = "полузащитник"
     STRIKER_POSITION = "нападающий"
+
+
+class DB_CONSTANTS:
+    NEWS_AVAILABLE = "available"
+    NEWS_UNAVAILABLE = "unavailable"
     
     
 
 settings = Settings()
 transactions = Transactions()
 team_member_settings = TeamMemberSettings()
+db_constants = DB_CONSTANTS()
 
 def get_db_url():
     return (f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@"

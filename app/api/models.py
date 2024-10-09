@@ -6,6 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .dependecies.database import Base, BaseClear
 
+from app.config import db_constants
+
 users_roles = Table(
     "users_roles",
     Base.metadata,
@@ -77,6 +79,7 @@ class News(Base):
     content: Mapped[str]
     category_name: Mapped[str] = mapped_column(ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE"))
     image_url: Mapped[str] = mapped_column(String(256))
+    status: Mapped[str] = mapped_column(default=db_constants.NEWS_AVAILABLE)
     
     news_actions: Mapped["NewsAction"] = relationship(
         back_populates="news", cascade="all, delete-orphan"
@@ -90,9 +93,9 @@ class NewsAction(Base):
     __tablename__ = "news_actions"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"))
-    news_id: Mapped[int] = mapped_column(ForeignKey("news.id", ondelete="NO ACTION", onupdate="CASCADE"))
-    # "create", "edit"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL", onupdate="CASCADE"))
+    news_id: Mapped[int] = mapped_column(ForeignKey("news.id", ondelete="CASCADE", onupdate="CASCADE"))
+    # "create", "edit", "delete"
     type: Mapped[str] = mapped_column(String(8))
     
     news: Mapped["News"] = relationship(
@@ -131,7 +134,7 @@ class TeamMember(Base):
     __tablename__ = "team_members"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=True)
     status: Mapped[str]
     role: Mapped[str]
     position: Mapped[str] = mapped_column(nullable=True)

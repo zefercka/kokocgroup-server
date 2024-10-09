@@ -17,8 +17,11 @@ async def get_news_categories(db: AsyncSession = Depends(get_db)):
 
 
 @app.get("/", response_model=list[News])
-async def get_all_news(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)):
-    news = await news_service.get_all_news(db, limit, offset)
+async def get_all_news(limit: int = 10, offset: int = 0, year: int | None = None, 
+                       month: int | None = None, db: AsyncSession = Depends(get_db)):
+    news = await news_service.get_all_news(
+        db, limit=limit, offset=offset, year=year, month=month
+    )
     return news
 
 
@@ -38,7 +41,7 @@ async def delete_news(news_id: int, current_user: User = Depends(auth_service.ge
 @app.put("/", response_model=News)
 async def update_news(news: News, current_user: User = Depends(auth_service.get_current_user), 
                       db: AsyncSession = Depends(get_db)):
-    news = await news_service.update_news(db, news, current_user=current_user)
+    news = await news_service.update_news(db, news=news, current_user=current_user)
     return news
 
 
