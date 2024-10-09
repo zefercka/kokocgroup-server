@@ -24,6 +24,7 @@ class Transactions:
     UPLOAD_IMAGE = "upload_image"
     REMOVE_ROLE = "remove_role"
     VIEW_DELETED_NEWS = "view_deleted_news"
+    VIEW_SHEDULED_NEWS = "view_sheduled_news"
     
 
 class TeamMemberSettings:

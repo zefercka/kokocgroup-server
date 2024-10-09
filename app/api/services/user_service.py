@@ -45,7 +45,8 @@ async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int) -> User
     return User.model_validate(user)
         
 
-async def remove_role_user(db: AsyncSession, current_user: User, user_id: int, role_id: int) -> User:
+async def remove_role_user(db: AsyncSession, current_user: User, user_id: int, 
+                           role_id: int) -> User:
     if not await check_user_permission(current_user, transactions.REMOVE_ROLE):
         raise NoPermissions
     

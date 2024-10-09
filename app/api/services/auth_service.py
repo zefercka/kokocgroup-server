@@ -29,12 +29,14 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
     refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
     
     await token_crud.add_token(
-        db, token=refresh_token.token, expired_date=refresh_token.expires_at, user_id=user.id
+        db, token=refresh_token.token, expired_date=refresh_token.expires_at,
+        user_id=user.id
     )
     
     user = SendUser.model_validate(user.model_dump(exclude=["roles"]))
     authorized_user = AuthorizedUser(
-        user=user, access_token=access_token.token, expires_at=access_token.expires_at, refresh_token=refresh_token.token
+        user=user, access_token=access_token.token, 
+        expires_at=access_token.expires_at, refresh_token=refresh_token.token
     )
     
     print(authorized_user)
@@ -43,7 +45,9 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
 
 
 async def register_user(db: AsyncSession, user_create: CreateUser) -> AuthorizedUser:
-    is_unique_user = False if await crud.get_user_by_email(db, user_create.email) or await crud.get_user_by_username(db, user_create.username) else True
+    is_unique_user = \
+        False if await crud.get_user_by_email(db, user_create.email) or \
+        await crud.get_user_by_username(db, user_create.username) else True
     
     if is_unique_user is False:
         raise HTTPException(
@@ -60,7 +64,9 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
  
 
 async def authenticate_user(db: AsyncSession, login: str, password: str) -> User | None:
-    user = await crud.get_user_by_username(db, username=login) or await crud.get_user_by_email(db, email=login)
+    user = \
+        await crud.get_user_by_username(db, username=login) or \
+        await crud.get_user_by_email(db, email=login)
     if user is None:
         return None
 
@@ -106,12 +112,15 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
         access_token = await jwt.create_access_token(data={"sub": user_id})
         refresh_token = await jwt.create_refresh_token(data={"sub": user_id})
         
-        await token_crud.add_token(db, token=refresh_token.token, expired_date=refresh_token.expires_at, user_id=user_id)
+        await token_crud.add_token(
+            db, token=refresh_token.token, 
+            expired_date=refresh_token.expires_at, user_id=user_id
+        )
         
         token = SendToken(
-            access_token=access_token.token, expires_at=access_token.expires_at, refresh_token=refresh_token.token
+            access_token=access_token.token, expires_at=access_token.expires_at, 
+            refresh_token=refresh_token.token
         )
-        print(token)
         return token
         
     except ExpiredSignatureError:
@@ -131,7 +140,8 @@ async def get_current_token(auth_key: str = Security(token_key)) -> Token:
     return Token(token=token)
 
 
-async def get_current_user(db: AsyncSession = Depends(get_db), token: Token = Depends(get_current_token)) -> User:    
+async def get_current_user(db: AsyncSession = Depends(get_db), 
+                           token: Token = Depends(get_current_token)) -> User:    
     try:
         
         user_id = await jwt.get_user_id(token=token)            
