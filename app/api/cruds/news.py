@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import and_, extract, select
+from sqlalchemy import and_, extract, select, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import db_constants
 
 from ..models import News, NewsAction, NewsCategory
+# from unidecode import unidecode
 
 
 async def get_news_by_id(db: AsyncSession, news_id: int) -> News | None:
@@ -24,9 +25,8 @@ async def get_news_by_id(db: AsyncSession, news_id: int) -> News | None:
 
 
 async def get_all_news(db: AsyncSession, limit: int, offset: int, 
-                       year: int | None = None, 
-                       month: int | None = None,
-                       category: str | None = None) -> list[News]:
+                       year: int | None, month: int | None,
+                       category: str | None, search: str | None) -> list[News]:
     """
     Get all available news from the database, 
     filtered by given year and month if provided.
@@ -68,6 +68,14 @@ async def get_all_news(db: AsyncSession, limit: int, offset: int,
     if category is not None:
         # Filter by category if provided
         query = query.where(News.category_name == category)
+    if search is not None:
+        # Filter by query if provided
+        query = query.where(
+            or_(
+                News.title.ilike(search),
+                News.content.ilike(f"%\"text\":\"{search}%")
+            )
+        )
 
     results = await db.execute(query)
     return results.scalars().all()

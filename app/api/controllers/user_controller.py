@@ -13,7 +13,7 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return user
 
 
-@app.get("/", response_model=list[SendUser])
+@app.get("", response_model=list[SendUser])
 async def get_users(limit: int = 50, offset: int = 0, db: AsyncSession = Depends(get_db)):
     users = await user_service.get_all_users(db, limit, offset)
     return users

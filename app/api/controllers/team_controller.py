@@ -10,7 +10,7 @@ from app.config import team_member_settings
 app = APIRouter()
 
 
-@app.get("/", response_model=Team)
+@app.get("", response_model=Team)
 async def get_team_members(status: str = "active", db: AsyncSession = Depends(get_db)):
     if status == team_member_settings.PRESENT_STATUS:
         members = await team_service.get_all_active_team_members(db)

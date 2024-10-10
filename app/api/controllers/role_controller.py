@@ -8,13 +8,13 @@ from ..services import role_service
 app = APIRouter()
 
 
-@app.get("/", response_model=list[Role])
+@app.get("", response_model=list[Role])
 async def get_all_roles(limit: int = 0, offset: int = 0, db: AsyncSession = Depends(get_db)):
     roles = await role_service.get_roles(db, limit, offset)
     return roles
 
 
-@app.post("/", response_model=Role)
+@app.post("", response_model=Role)
 async def create_role(role: Role, db: AsyncSession = Depends(get_db)):
     role = await role_service.create_role(db, role)
     return role 

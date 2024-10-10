@@ -1,12 +1,12 @@
 from datetime import date, datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, String, Table, func
+from sqlalchemy import Column, ForeignKey, String, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .dependecies.database import Base, BaseClear
-
 from app.config import db_constants
+
+from .dependecies.database import Base, BaseClear
 
 users_roles = Table(
     "users_roles",
@@ -87,7 +87,7 @@ class News(Base):
     category: Mapped["NewsCategory"] = relationship(
         back_populates="news"
     )
-    
+        
 
 class NewsAction(Base):
     __tablename__ = "news_actions"

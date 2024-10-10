@@ -16,7 +16,7 @@ async def get_news_categories(db: AsyncSession = Depends(get_db)):
     return categories
 
 
-@app.get("/deleted/", response_model=list[News])
+@app.get("/deleted", response_model=list[News])
 async def get_all_deleted_news(limit: int = 10, offset: int = 0,
                                year: int | None = None,
                                month: int | None = None,
@@ -54,14 +54,14 @@ async def get_all_scheduled_news(limit: int = 10, offset: int = 0,
     return news
 
 
-@app.get("/", response_model=list[News])
+@app.get("", response_model=list[News])
 async def get_all_news(limit: int = 10, offset: int = 0, 
                        year: int | None = None, month: int | None = None, 
-                       category: str | None = None,
+                       category: str | None = None, search: str | None = None,
                        db: AsyncSession = Depends(get_db)):
     news = await news_service.get_all_news(
         db, limit=limit, offset=offset, year=year, month=month, 
-        category=category
+        category=category, search = search
     )
     return news
 
@@ -82,7 +82,7 @@ async def delete_news(news_id: int,
     )
 
 
-@app.put("/", response_model=News)
+@app.put("", response_model=News)
 async def update_news(news: News, 
                       current_user: User = Depends(auth_service.get_current_user), 
                       db: AsyncSession = Depends(get_db)):
@@ -92,7 +92,7 @@ async def update_news(news: News,
     return news
 
 
-@app.post("/", response_model=News)
+@app.post("", response_model=News)
 async def create_news(news: CreateNews, 
                       current_user: User = Depends(auth_service.get_current_user), 
                       db: AsyncSession = Depends(get_db)):
