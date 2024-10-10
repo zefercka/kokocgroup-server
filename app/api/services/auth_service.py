@@ -4,6 +4,8 @@ from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import text
+
 from ..cruds import refresh_token as token_crud
 from ..cruds import user as crud
 from ..dependecies import hash, jwt
@@ -19,6 +21,9 @@ token_key = APIKeyHeader(name="Authorization")
 
 
 async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUser:
+    
+    # db.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
+    
     user = await authenticate_user(db, data.login, data.password)
     if not user:
         raise HTTPException(

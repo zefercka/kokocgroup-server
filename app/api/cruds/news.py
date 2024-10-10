@@ -72,8 +72,8 @@ async def get_all_news(db: AsyncSession, limit: int, offset: int,
         # Filter by query if provided
         query = query.where(
             or_(
-                News.title.ilike(search),
-                News.content.ilike(f"%\"text\":\"{search}%")
+                News.title.ilike(f"%{search}%"),
+                News.content.ilike(f"%\"text\":\"%{search}%")
             )
         )
 
