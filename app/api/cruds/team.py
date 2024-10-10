@@ -16,5 +16,9 @@ async def get_all_active_team_members(db: AsyncSession) -> list[TeamMember]:
 
 
 async def get_all_inactive_team_members(db: AsyncSession) -> list[TeamMember]:
-    results = await db.execute(select(TeamMember).where(TeamMember.status == team_member_settings.PAST_STATUS))
+    results = await db.execute(
+        select(TeamMember).where(
+            TeamMember.status == team_member_settings.PAST_STATUS
+            )
+        )
     return results.scalars.all()
