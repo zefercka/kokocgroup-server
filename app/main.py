@@ -28,3 +28,19 @@ app.include_router(role_controller, prefix="/api/v1/roles", tags=["Roles"])
 app.include_router(news_controller, prefix="/api/v1/news", tags=["News"])
 app.include_router(files_controller, prefix="/api/v1/files", tags=["Files"])
 app.include_router(team_controller, prefix="/api/v1/teams", tags=["Teams"])
+
+
+"""
+    CREATE OR REPLACE FUNCTION extract_text_from_json(p_json jsonb)
+RETURNS text AS $$
+DECLARE
+    v_text text;
+BEGIN
+    FOR v_text IN SELECT jsonb_array_elements(p_json->'content')->>'text'
+    LOOP
+        RETURN v_text;
+    END LOOP;
+    RETURN '';
+END;
+$$ LANGUAGE plpgsql;
+    """

@@ -11,13 +11,18 @@ app = APIRouter()
 
 
 @app.get("", response_model=Team)
-async def get_team_members(status: str = "active", db: AsyncSession = Depends(get_db)):
+async def get_team_members(status: str = "present", db: AsyncSession = Depends(get_db)):
     if status == team_member_settings.PRESENT_STATUS:
         members = await team_service.get_all_active_team_members(db)
     elif status == team_member_settings.PAST_STATUS:
-        members = await team_service.get_all_inactive_team_members(db)       
+        members = await team_service.get_all_inactive_team_members(db)
+    else:
+        members = []   
             
     return members
+
+
+# @app.post("")
 
 
 # @app.get("/", )

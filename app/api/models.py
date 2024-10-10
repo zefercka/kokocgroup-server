@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy import Column, ForeignKey, String, Table, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import db_constants
@@ -76,7 +76,7 @@ class News(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(256))
     news_date: Mapped[datetime]
-    content: Mapped[str]
+    content: Mapped[str] = mapped_column(String)
     category_name: Mapped[str] = mapped_column(ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE"))
     image_url: Mapped[str] = mapped_column(String(256))
     status: Mapped[str] = mapped_column(default=db_constants.NEWS_AVAILABLE)
@@ -87,7 +87,17 @@ class News(Base):
     category: Mapped["NewsCategory"] = relationship(
         back_populates="news"
     )
-        
+    
+    __table_args__ = (
+        Index('ix_title_content', 
+              func.coalesce(title, '').concat(
+                  func.coalesce(content, '')).label('news_search'),
+              postgresql_using='gin', 
+              postgresql_ops={'news_search': 'gin_trgm_ops'},
+        ),
+    ) 
+    
+    #               postgresql_ops={'content': 'gin_trgm_ops'}
 
 class NewsAction(Base):
     __tablename__ = "news_actions"
