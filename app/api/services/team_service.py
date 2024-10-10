@@ -4,7 +4,6 @@ from ..cruds import team as crud
 from ..schemas.team import Team, Member
 from ..models import TeamMember
 from app.config import team_member_settings
-import time
 
 
 async def get_all_active_team_members(db: AsyncSession):

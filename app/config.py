@@ -22,7 +22,14 @@ class Transactions:
     EDIT_NEWS = "edit_news"
     DELETE_NEWS = "delete_news"
     UPLOAD_IMAGE = "upload_image"
+    
+    CREATE_ROLE = "create_role"
+    EDIT_ROLE = "edit_role"
+    DELETE_ROLE = "delete_role"
+    
+    ADD_ROLE = "add_role"
     REMOVE_ROLE = "remove_role"
+    
     VIEW_DELETED_NEWS = "view_deleted_news"
     VIEW_SHEDULED_NEWS = "view_sheduled_news"
     
@@ -46,6 +53,8 @@ class TeamMemberSettings:
 class DB_CONSTANTS:
     NEWS_AVAILABLE = "available"
     NEWS_UNAVAILABLE = "unavailable"
+    
+    BASE_ROLE = "BASE_ROLE_ID"
     
     
 

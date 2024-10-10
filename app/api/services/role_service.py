@@ -1,29 +1,89 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..cruds import role as crud
-from ..dependecies.exceptions import RoleNotFound
-from ..schemas.role import Role
+from ..cruds import permission as p_crud
+from ..dependecies.exceptions import RoleNotFound, NoPermissions
+from ..schemas.role import Role, CreateRole
+from ..schemas.user import User
+from ..services.user_service import check_user_permission
+
+from app.config import transactions
 
 
-async def create_role(db: AsyncSession, role: Role) -> Role:
-    role = await crud.add_role(db, name=role.name)
-    return Role.model_validate(role)
+async def create_role(db: AsyncSession, role: CreateRole, 
+                      current_user: User) -> Role:
+    if not await check_user_permission(current_user, transactions.CREATE_ROLE):
+        raise NoPermissions
+    
+    created_role = await crud.create_role(db, name=role.name)
+    created_role = await p_crud.add_permissions_to_role(
+        db, permissons=role.permissions, role=created_role
+    )
+    return Role(
+        id=created_role.id, name=created_role.name, 
+        permissions=created_role.permissions
+    )
 
 
 async def get_roles(db: AsyncSession, limit: int, offset: int) -> list[Role]:
-    roles = await get_roles(db, limit=limit, offset=offset)
+    roles = await crud.get_roles(db, limit=limit, offset=offset)
     return roles
 
 
-async def update_name(db: AsyncSession, role_id: int, name: str) -> Role:
-    role = await crud.get_role_by_id(db, role_id)
-    if role is None:
+async def edit_role(db: AsyncSession, role: Role, 
+                    current_user: User) -> Role:
+    if not await check_user_permission(current_user, transactions.EDIT_ROLE):
+        raise NoPermissions
+    
+    existing_role = await crud.get_role_by_id(db, role.id)
+    if existing_role is None:
         raise RoleNotFound
     
-    role = await crud.update_role_name(db, role, name)
-    return Role.model_validate(role)
-
-
+    if role.name != existing_role.name:
+        existing_role = await crud.update_role_name(db, existing_role, role.name)
+    
+    existing_role_validated = Role(
+        id=existing_role.id, name=existing_role.name, 
+        permissions=existing_role.permissions
+    )
+    
+    new_permissions = list(
+        set(role.permissions) - set(existing_role_validated.permissions)
+    )
+    if new_permissions != []:
+        existing_role = await p_crud.add_permissions_to_role(
+            db, permissons=new_permissions, role=existing_role
+        )
+    
+    existing_role_validated = Role(
+        id=existing_role.id, name=existing_role.name, 
+        permissions=existing_role.permissions
+    )
+    removed_permissions = list(
+        set(existing_role_validated.permissions) - set(role.permissions)
+    )
+    if removed_permissions != []:
+        existing_role = await p_crud.remove_peremissions_from_role(
+            db, permissions=removed_permissions, role=existing_role
+        )
+    
+    return Role(
+        id=existing_role.id, name=existing_role.name, 
+        permissions=existing_role.permissions
+    )
+    
+    
 async def get_role(db: AsyncSession, role_id: int) -> Role:
     role = await crud.get_role_by_id(db, role_id)
     return role
+
+
+async def delete_role(db: AsyncSession, role_id: int, current_user: User):
+    if not await check_user_permission(current_user, transactions.DELETE_ROLE):
+        raise NoPermissions
+    
+    role = await crud.get_role_by_id(db, role_id=role_id)
+    if role is None:
+        raise RoleNotFound
+    
+    await crud.delete_role(db, role=role)

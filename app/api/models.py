@@ -56,7 +56,7 @@ class Role(BaseClear):
     )
     
     permissions: Mapped[List["Permission"]] = relationship(
-        secondary="roles_permissions", back_populates="roles", lazy="joined"
+        secondary="roles_permissions", back_populates="roles", lazy="selectin"
     )
 
 
@@ -74,7 +74,7 @@ class News(Base):
     __tablename__ = "news"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(String(128))
+    title: Mapped[str] = mapped_column(String(256))
     news_date: Mapped[datetime]
     content: Mapped[str]
     category_name: Mapped[str] = mapped_column(ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE"))
@@ -142,3 +142,10 @@ class TeamMember(Base):
     weight: Mapped[int] = mapped_column(nullable=True)
     
     user: Mapped["User"] = relationship(lazy="selectin")
+    
+    
+class BaseSettings(BaseClear):
+    __tablename__ = "base_settings"
+    
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(String(256))

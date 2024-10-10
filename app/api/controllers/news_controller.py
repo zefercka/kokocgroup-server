@@ -17,7 +17,7 @@ async def get_news_categories(db: AsyncSession = Depends(get_db)):
 
 
 @app.get("/deleted", response_model=list[News])
-async def get_all_deleted_news(limit: int = 10, offset: int = 0,
+async def get_all_deleted_news(limit: int = 16, offset: int = 0,
                                year: int | None = None,
                                month: int | None = None,
                                category: str | None = None,
@@ -41,7 +41,7 @@ async def get_all_deleted_news(news_id: int,
 
 
 @app.get("/sheduled", response_model=list[News])
-async def get_all_scheduled_news(limit: int = 10, offset: int = 0, 
+async def get_all_scheduled_news(limit: int = 16, offset: int = 0, 
                                  year: int | None = None, 
                                  month: int | None = None, 
                                  category: str | None = None,
@@ -55,7 +55,7 @@ async def get_all_scheduled_news(limit: int = 10, offset: int = 0,
 
 
 @app.get("", response_model=list[News])
-async def get_all_news(limit: int = 10, offset: int = 0, 
+async def get_all_news(limit: int = 16, offset: int = 0, 
                        year: int | None = None, month: int | None = None, 
                        category: str | None = None, search: str | None = None,
                        db: AsyncSession = Depends(get_db)):

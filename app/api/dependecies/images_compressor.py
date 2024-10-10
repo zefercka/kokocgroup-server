@@ -4,7 +4,7 @@ from fastapi import UploadFile
 TARGET_SIZE_MB = 5
 
 
-async def compress_image(image: UploadFile, path: str):
+async def compress_and_save_image(image: UploadFile, path: str):
     img = Image.open(image.file)
     img = img.convert("RGB")
     

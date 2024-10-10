@@ -14,19 +14,12 @@ async def get_roles(db: AsyncSession, limit: int, offset: int) -> list[Role] | N
     return results.scalars().all()
 
 
-async def add_role(db: AsyncSession, name: str, access_level: int) -> Role | None:
-    role = Role(name=name, access_level=access_level)
+async def create_role(db: AsyncSession, name: str) -> Role | None:
+    role = Role(name=name)
     db.add(role)
     await db.commit()
     await db.refresh(role)
 
-    return role
-
-
-async def update_role_access_level(db: AsyncSession, role: Role, access_level: int) -> Role:
-    role.access_level = access_level
-    await db.commit()
-    
     return role
     
 
@@ -37,6 +30,6 @@ async def update_role_name(db: AsyncSession, role: Role, name: str) -> Role:
     return role
 
 
-# async def get_roles_by_permission(db: AsyncSession, permission: str) -> list[Role]:
-#     results = await db.execute(select(Role).where(permission in Role.permissions()))
-#     return results.scalars().all()
+async def delete_role(db: AsyncSession, role: Role):
+    await db.delete(role)
+    await db.commit()

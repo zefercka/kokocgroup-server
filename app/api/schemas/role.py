@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, field_validator
 
 
@@ -6,7 +8,7 @@ class BaseRole(BaseModel):
 
 
 class CreateRole(BaseRole):
-    transactions: list[str]
+    permissions: list[str]
     
 
 class Role(BaseRole):
@@ -18,6 +20,12 @@ class Role(BaseRole):
         
     @field_validator("permissions", mode="before")
     def adjust_permissions(permissions):
-        return [permission.name.lower() for permission in permissions]
+        if len(permissions) == 0:
+            return []
+
+        if type(permissions[0]) == str:
+            return permissions
+        
+        return [permission.name for permission in permissions]
         
     

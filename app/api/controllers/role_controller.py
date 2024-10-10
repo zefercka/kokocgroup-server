@@ -2,21 +2,26 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.role import Role
-from ..services import role_service
+from ..schemas.role import Role, CreateRole
+from ..schemas.user import User
+from ..services import role_service, auth_service
 
 app = APIRouter()
 
 
 @app.get("", response_model=list[Role])
-async def get_all_roles(limit: int = 0, offset: int = 0, db: AsyncSession = Depends(get_db)):
+async def get_all_roles(limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)):
     roles = await role_service.get_roles(db, limit, offset)
     return roles
 
 
 @app.post("", response_model=Role)
-async def create_role(role: Role, db: AsyncSession = Depends(get_db)):
-    role = await role_service.create_role(db, role)
+async def create_role(role: CreateRole, 
+                      current_user: User = Depends(auth_service.get_current_user),
+                      db: AsyncSession = Depends(get_db)):
+    role = await role_service.create_role(
+        db, role=role, current_user=current_user
+    )
     return role 
 
 
@@ -26,9 +31,21 @@ async def get_role(role_id: int, db: AsyncSession = Depends(get_db)):
     return role
 
 
-@app.put("/{role_id}", response_model=Role)
-async def update_role(role_id: int, name: str, db: AsyncSession = Depends(get_db)):
-    if name is not None:
-        role = await role_service.update_name(db, role_id=role_id, name=name)
+@app.put("", response_model=Role)
+async def edit_role(role: Role, 
+                      current_user: User = Depends(auth_service.get_current_user),
+                      db: AsyncSession = Depends(get_db)):
+    role = await role_service.edit_role(
+        db, role=role, current_user=current_user
+    )
         
     return role
+
+
+@app.post("/{role_id}")
+async def delete_role(role_id: int, 
+                      current_user = Depends(auth_service.get_current_user),
+                      db: AsyncSession = Depends(get_db)):
+    await role_service.delete_role(
+        db, role_id=role_id, current_user=current_user
+    )
