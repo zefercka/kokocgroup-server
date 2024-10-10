@@ -144,7 +144,7 @@ class TeamMember(Base):
     __tablename__ = "team_members"
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"), nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
     status: Mapped[str]
     role: Mapped[str]
     position: Mapped[str] = mapped_column(nullable=True)

@@ -1,12 +1,21 @@
-from typing import Optional
+from datetime import date
+from typing import Literal, Optional
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel
 
 from app.config import team_member_settings
+from enum import Enum
 
-from ..schemas.user import User
 
-from datetime import date
+class MemberRoles(Enum):
+    player = team_member_settings.PLAYER_ROLE
+    trainer= team_member_settings.TRAINER_ROLE
+    admin = team_member_settings.ADMIN_ROLE
+    
+
+class MemberStatus(Enum):
+    present = team_member_settings.PRESENT_STATUS
+    past = team_member_settings.PAST_STATUS
 
 
 class Team(BaseModel):
@@ -18,15 +27,30 @@ class Team(BaseModel):
     admins: list["Member"]
     
 
-class Member(BaseModel):
+class BaseMember(BaseModel):
     position: str
-    height: Optional[int]
-    weight: Optional[int]
+    height: Optional[int] = None
+    weight: Optional[int] = None
     user_id: int
+    
+    class Config:
+        from_attributes = True
+
+
+class Member(BaseMember):
+    id: int
     first_name: str = ""
     last_name: str = ""
     date_of_birth: date = ""
     avatar_url: Optional[str] = ""
+
+
+class NewMember(BaseMember):
+    role: MemberRoles
+    status: MemberStatus
     
-    class Config:
-        from_attributes = True
+
+class EditMember(BaseMember):
+    id: int
+    role: MemberRoles
+    status: MemberStatus

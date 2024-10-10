@@ -22,6 +22,8 @@ class Transactions:
     EDIT_NEWS = "edit_news"
     DELETE_NEWS = "delete_news"
     UPLOAD_IMAGE = "upload_image"
+    VIEW_DELETED_NEWS = "view_deleted_news"
+    VIEW_SHEDULED_NEWS = "view_sheduled_news"
     
     CREATE_ROLE = "create_role"
     EDIT_ROLE = "edit_role"
@@ -30,10 +32,10 @@ class Transactions:
     ADD_ROLE = "add_role"
     REMOVE_ROLE = "remove_role"
     
-    VIEW_DELETED_NEWS = "view_deleted_news"
-    VIEW_SHEDULED_NEWS = "view_sheduled_news"
+    ADD_TEAM_MEMBER = "add_team_member"
+    EDIT_TEAM_MEMBER = "edit_team_member"
     
-
+    
 class TeamMemberSettings:
     # Играют в текущем составе
     PRESENT_STATUS = "present"

@@ -22,3 +22,33 @@ async def get_all_inactive_team_members(db: AsyncSession) -> list[TeamMember]:
             )
         )
     return results.scalars.all()
+
+
+async def add_team_member(db: AsyncSession, user_id: int, position: str, 
+                          height: int | None, weight: int | None, 
+                          status: str, role: str) -> TeamMember:
+    new_member = TeamMember(
+        user_id=user_id, status=status, role=role, position=position, 
+        height=height, weight=weight
+    )
+    db.add(new_member)
+    await db.commit()
+    await db.refresh(new_member)
+    
+    return new_member
+
+
+async def edit_team_member(db: AsyncSession, member: TeamMember, user_id: int, 
+                           position: str, height: int | None, 
+                           weight: int | None, status: str, 
+                           role: str) -> TeamMember:
+    member.user_id = user_id
+    member.position = position
+    member.height = height
+    member.weight = weight
+    member.status = status
+    member.role = role
+    await db.commit()
+    await db.refresh(member)
+    return member
+    

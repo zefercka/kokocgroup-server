@@ -3,7 +3,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.team import Team
+from ..schemas.team import Team, NewMember, EditMember
+from ..schemas.user import User
 from ..services import auth_service, team_service
 from app.config import team_member_settings
 
@@ -22,8 +23,22 @@ async def get_team_members(status: str = "present", db: AsyncSession = Depends(g
     return members
 
 
-# @app.post("")
+@app.post("")
+async def add_team_member(member: NewMember, 
+                          current_user: User = Depends(auth_service.get_current_user),
+                          db: AsyncSession = Depends(get_db)):
+    member = await team_service.add_team_member(
+        db, member=member, current_user=current_user
+    )
+    return member
 
 
+@app.put("")
+async def edit_team_member(member: EditMember,
+                           current_user: User = Depends(auth_service.get_current_user),
+                           db: AsyncSession = Depends(get_db)):
+    member = await team_service.edit_team_member(
+        db, member=member, current_user=current_user
+    )
 # @app.get("/", )
 # async def 
