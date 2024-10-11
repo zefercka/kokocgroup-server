@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.team import Team, NewMember, EditMember, TeamList
+from ..schemas.team import NewMember, EditMember, TeamList
 from ..schemas.user import User
 from ..services import auth_service, team_service
 from app.config import team_member_settings
