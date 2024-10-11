@@ -13,7 +13,7 @@ from ..dependecies.exceptions import (InvalidToken, TokenExpired, TokenRevoked,
 from ..schemas.authorization import Authorization
 from ..schemas.token import SendToken, Token
 from ..schemas.user import AuthorizedUser, CreateUser, SendUser, User
-from ..services import user_service
+from . import users_service
 
 token_key = APIKeyHeader(name="Authorization")
 
@@ -57,7 +57,7 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
         )
     
     user = await crud.add_user(db, **user_create.model_dump())
-    user = await user_service.add_base_role_to_user(db, user=user)
+    user = await users_service.add_base_role_to_user(db, user=user)
     
     data = Authorization(login=user_create.email, password=user_create.password)
     user = await authorize_user(db, data)

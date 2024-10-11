@@ -2,12 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import team_member_settings, transactions
 
-from ..cruds import team as crud
-from ..dependecies.exceptions import NoPermissions, MemberNotFound
+from ..cruds import member as crud
+from ..dependecies.exceptions import MemberNotFound
 from ..models import TeamMember
-from ..schemas.team import Member, NewMember, TeamList, EditMember
+from ..schemas.member import Member, NewMember, TeamList, EditMember
 from ..schemas.user import User
-from ..services.user_service import check_user_permission, get_user
+from .users_service import check_user_permission, get_user
 
 
 async def get_all_active_team_members(db: AsyncSession):
@@ -68,10 +68,7 @@ async def validate_team_model(members: list[TeamMember]) -> TeamList:
     
 async def add_team_member(db: AsyncSession, member: NewMember, 
                           current_user: User) -> Member:
-    if not await check_user_permission(
-        current_user, transactions.ADD_TEAM_MEMBER
-    ):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.ADD_TEAM_MEMBER)
     
     if member.user_id != None:
         # Вызовет исключение, если юзера нет
@@ -84,11 +81,8 @@ async def add_team_member(db: AsyncSession, member: NewMember,
 
 async def edit_team_member(db: AsyncSession, member: EditMember, 
                            current_user: User) -> Member:
-    if not await check_user_permission(
-        current_user, transactions.EDIT_TEAM_MEMBER
-    ):
-        raise NoPermissions
-    
+    await check_user_permission(current_user, transactions.EDIT_TEAM_MEMBER)
+
     member_obj = await crud.get_team_member_by_id(
         db, team_member_id=member.id
     )
@@ -110,10 +104,7 @@ async def edit_team_member(db: AsyncSession, member: EditMember,
 
 async def delete_team_member(db: AsyncSession, member_id: int, 
                              current_user: User):
-    if not await check_user_permission(
-        current_user, transactions.DELETE_TEAM_MEMBER
-    ):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.DELETE_TEAM_MEMBER)
     
     member_obj = await crud.get_team_member_by_id(db, team_member_id=member_id)
     if member_obj is None:

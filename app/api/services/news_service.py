@@ -1,14 +1,12 @@
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import db_constants, transactions
 
 from ..cruds import news as crud
-from ..dependecies.exceptions import (CategotyNotFound, NewsNotFound,
-                                      NoPermissions)
+from ..dependecies.exceptions import CategotyNotFound, NewsNotFound
 from ..schemas.news import News
 from ..schemas.user import User
-from ..services.user_service import check_user_permission
+from .users_service import check_user_permission
 
 
 async def get_news(db: AsyncSession, news_id: int) -> News:
@@ -35,8 +33,7 @@ async def get_all_deleted_news(db: AsyncSession,  limit: int, offset: int,
                                year: int | None, month: int | None,
                                category: str | None,
                                current_user: User) -> list[News]:
-    if not await check_user_permission(current_user, transactions.VIEW_DELETED_NEWS):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.VIEW_DELETED_NEWS)
     
     news = await crud.get_all_deleted_news(
         db, limit=limit, offset=offset, year=year, month=month,
@@ -47,8 +44,7 @@ async def get_all_deleted_news(db: AsyncSession,  limit: int, offset: int,
 
 
 async def create_news(db: AsyncSession, news: News, current_user: User) -> News:    
-    if not await check_user_permission(current_user, transactions.CREATE_NEWS):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.CREATE_NEWS)
 
     category = await crud.get_news_category(db, news.category_name)
     if category is None:
@@ -61,8 +57,7 @@ async def create_news(db: AsyncSession, news: News, current_user: User) -> News:
     
 
 async def delete_news(db: AsyncSession, news_id: int, current_user: User):
-    if not await check_user_permission(current_user, transactions.DELETE_NEWS):
-        raise NoPermissions
+    check_user_permission(current_user, transactions.DELETE_NEWS)
     
     news = await crud.get_news_by_id(db, news_id=news_id)
     if news is None:
@@ -72,8 +67,7 @@ async def delete_news(db: AsyncSession, news_id: int, current_user: User):
     
 
 async def update_news(db: AsyncSession, news: News, current_user: User) -> News:
-    if not await check_user_permission(current_user, transactions.EDIT_NEWS):
-        return NoPermissions
+    await check_user_permission(current_user, transactions.EDIT_NEWS)
     
     old_news = await crud.get_news_by_id(db, news_id=news.id)
     if old_news is None:
@@ -98,8 +92,7 @@ async def get_all_categories(db: AsyncSession) -> list[str]:
 
 async def get_deleted_news(db: AsyncSession, news_id: int, 
                            current_user: User) -> News:
-    if not await check_user_permission(current_user, transactions.VIEW_DELETED_NEWS):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.VIEW_DELETED_NEWS)
     
     news = await crud.get_news_by_id(db, news_id=news_id)
     if news is None or news.status != db_constants.NEWS_UNAVAILABLE:
@@ -112,8 +105,7 @@ async def get_all_scheduled_news(db: AsyncSession, limit: int, offset: int,
                                  year: int | None, month: int | None,
                                  category: str | None,
                                  current_user: User) -> list[News]:
-    if not await check_user_permission(current_user, transactions.VIEW_SHEDULED_NEWS):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.VIEW_SHEDULED_NEWS)
     
     news = await crud.get_all_scheduled_news(
         db, limit=limit, offset=offset, year=year, month=month, 

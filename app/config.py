@@ -32,6 +32,10 @@ class Transactions:
     ADD_ROLE = "add_role"
     REMOVE_ROLE = "remove_role"
     
+    CREATE_TEAM = "create_team"
+    EDIT_TEAM = "edit_team"
+    DELETE_TEAM = "delete_team"
+    
     ADD_TEAM_MEMBER = "add_team_member"
     EDIT_TEAM_MEMBER = "edit_team_member"
     DELETE_TEAM_MEMBER = "delete_team_member"

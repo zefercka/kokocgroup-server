@@ -1,19 +1,18 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..cruds import role as crud
-from ..cruds import permission as p_crud
-from ..dependecies.exceptions import RoleNotFound, NoPermissions
-from ..schemas.role import Role, CreateRole
-from ..schemas.user import User
-from ..services.user_service import check_user_permission
-
 from app.config import transactions
+
+from ..cruds import permission as p_crud
+from ..cruds import role as crud
+from ..dependecies.exceptions import RoleNotFound
+from ..schemas.role import CreateRole, Role
+from ..schemas.user import User
+from ..services.users_service import check_user_permission
 
 
 async def create_role(db: AsyncSession, role: CreateRole, 
                       current_user: User) -> Role:
-    if not await check_user_permission(current_user, transactions.CREATE_ROLE):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.CREATE_ROLE)
     
     created_role = await crud.create_role(db, name=role.name)
     created_role = await p_crud.add_permissions_to_role(
@@ -32,8 +31,7 @@ async def get_roles(db: AsyncSession, limit: int, offset: int) -> list[Role]:
 
 async def edit_role(db: AsyncSession, role: Role, 
                     current_user: User) -> Role:
-    if not await check_user_permission(current_user, transactions.EDIT_ROLE):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.EDIT_ROLE)
     
     existing_role = await crud.get_role_by_id(db, role.id)
     if existing_role is None:
@@ -75,12 +73,14 @@ async def edit_role(db: AsyncSession, role: Role,
     
 async def get_role(db: AsyncSession, role_id: int) -> Role:
     role = await crud.get_role_by_id(db, role_id)
+    if role is None:
+        raise RoleNotFound
+    
     return role
 
 
 async def delete_role(db: AsyncSession, role_id: int, current_user: User):
-    if not await check_user_permission(current_user, transactions.DELETE_ROLE):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.DELETE_ROLE)
     
     role = await crud.get_role_by_id(db, role_id=role_id)
     if role is None:

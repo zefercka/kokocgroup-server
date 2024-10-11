@@ -11,7 +11,7 @@ app = APIRouter()
 
 
 @app.post("/login", response_model=AuthorizedUser)
-async def login(form_data: Authorization = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(form_data: Authorization, db: AsyncSession = Depends(get_db)):
     return await auth_service.authorize_user(db, form_data)
     
 

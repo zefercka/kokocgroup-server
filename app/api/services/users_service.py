@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import db_constants, transactions
 
 from .. import models
-from ..cruds import role as role_crud
+from ..cruds import role as r_crud
 from ..cruds import settings as settings_crud
 from ..cruds import user as crud
 from ..dependecies.exceptions import NoPermissions, RoleNotFound, UserNotFound
@@ -30,14 +30,13 @@ async def get_all_users(db: AsyncSession, limit: int, offset: int) -> list[User]
         
 async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int,
                            current_user: User) -> User:
-    if check_user_permission(current_user, transactions.ADD_ROLE):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.ADD_ROLE)
     
     user = await crud.get_user_by_id(db, user_id)
     if user is None:
         raise UserNotFound
     
-    role = await role_crud.get_role_by_id(db, role_id)
+    role = await r_crud.get_role_by_id(db, role_id=role_id)
     if role is None:
         raise RoleNotFound
     
@@ -53,21 +52,18 @@ async def add_role_to_user(db: AsyncSession, user_id: int, role_id: int,
 
 async def remove_role_user(db: AsyncSession, current_user: User, user_id: int, 
                            role_id: int) -> User:
-    if not await check_user_permission(current_user, transactions.REMOVE_ROLE):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.REMOVE_ROLE)
     
     user = await crud.get_user_by_id(db, user_id)
     if user is None:
         raise UserNotFound
 
-    role = await role_crud.get_role_by_id(db, role_id)
-    if role is None:
-        raise RoleNotFound
+    role = await r_crud.get_role_by_id(db, role_id=role_id)
     
     if role not in user.roles:
         raise HTTPException(
             status_code=status.HTTP_304_NOT_MODIFIED, 
-            detail="Users does not have this role"
+            detail="Пользователь уже имеет эту роль"
         )
         
     user = await crud.remove_role_user(db, user=user, role=role)
@@ -75,11 +71,9 @@ async def remove_role_user(db: AsyncSession, current_user: User, user_id: int,
     return User.model_validate(user)
 
 
-async def check_user_permission(user: User, permission: str) -> bool:    
-    if permission in user.permissions:
-        return True
-
-    return False
+async def check_user_permission(user: User, permission: str):    
+    if permission not in user.permissions:
+        raise NoPermissions
 
 
 async def add_base_role_to_user(db: AsyncSession, user: models.User):
@@ -88,6 +82,6 @@ async def add_base_role_to_user(db: AsyncSession, user: models.User):
     )
     if base_role_id is not None:
         base_role_id = int(base_role_id.value)
-        base_role = await role_crud.get_role_by_id(db, role_id=base_role_id)
+        base_role = await r_crud.get_role_by_id(db, role_id=base_role_id)
         if base_role is not None:
             user = await crud.add_role_to_user(db, user, base_role)

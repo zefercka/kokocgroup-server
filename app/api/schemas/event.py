@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
-from ..schemas.team import Team
+from ..schemas.team import EventTeam
 
 
 class EventBase(BaseModel):
@@ -32,8 +32,8 @@ class CreateEvent(EventBase):
 
 class Event(EventBase):
     id: int
-    first_team: Team
-    second_team: Team
+    first_team: EventTeam
+    second_team: EventTeam
     location_name: Optional[str]
     location_address: Optional[str]
     

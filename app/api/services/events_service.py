@@ -7,40 +7,30 @@ from ..cruds import event as crud
 from ..cruds import location as l_crud
 from ..cruds import settings as s_crud
 from ..cruds import team as t_crud
-from ..dependecies.exceptions import (LocationNotFound, NoPermissions,
-                                      TeamNotFound, EventNotFound)
-from ..schemas.event import CreateEvent, Event, EditEvent
-from ..schemas.team import Team
+from ..dependecies.exceptions import (EventNotFound, LocationNotFound,
+                                      TeamNotFound)
+from ..schemas.event import CreateEvent, EditEvent, Event
+from ..schemas.team import EventTeam
 from ..schemas.user import User
-from ..services.user_service import check_user_permission
+from ..services import teams_service
+from .users_service import check_user_permission
 
 
 async def create_event(db: AsyncSession, event: CreateEvent, 
                        current_user: User) -> Event:
-    if not await check_user_permission(
-        current_user, transactions.CREATE_EVENT
-    ):
-        raise NoPermissions
-    
+    await check_user_permission(current_user, transactions.CREATE_EVENT)
+
     first_team_id = None
     second_team_id = None
     
     if event.first_team_id is not None:
-        team_obj = await t_crud.get_team_by_id(
-            db, team_id=event.second_team_id
-        )
-        if team_obj is None:
-            raise TeamNotFound
-        
+        # Если команды нет, то вызовет исключение
+        await teams_service.get_team(db, team_id=event.second_team_id)
         first_team_id = event.first_team_id
     
     if event.second_team_id is not None:
-        team_obj = await t_crud.get_team_by_id(
-            db, team_id=event.second_team_id
-        )
-        if team_obj is None:
-            raise TeamNotFound
-        
+        # Если команды нет, то вызовет исключение
+        await teams_service.get_team(db, team_id=event.second_team_id)
         second_team_id = event.second_team_id
     
     if event.location_id != None:
@@ -108,8 +98,7 @@ async def get_all_events(db: AsyncSession, limit: int,
 
 async def edit_event(db: AsyncSession, event: EditEvent, 
                      current_user: User) -> Event:
-    if not await check_user_permission(current_user, transactions.EDIT_EVENT):
-        raise NoPermissions
+    await check_user_permission(current_user, transactions.EDIT_EVENT)
     
     event_obj = await crud.get_event_by_id(db, event_id=event.id)
     if event_obj is None:
@@ -145,9 +134,9 @@ async def edit_event(db: AsyncSession, event: EditEvent,
 
 
 async def validate_event_model(event: models.Event) -> Event:
-    first_team = Team.model_validate(event.first_team)
+    first_team = EventTeam.model_validate(event.first_team)
     first_team.score = event.first_team_score
-    second_team = Team.model_validate(event.second_team)
+    second_team = EventTeam.model_validate(event.second_team)
     second_team.score = event.second_team_score
     
     validated_event = Event(

@@ -12,12 +12,13 @@ from ..dependecies.exceptions import (FileNotFound, NoPermissions,
                                       UnexpectedFileType)
 from ..dependecies.images_compressor import compress_and_save_image
 from ..schemas.user import User
-from ..services import user_service
+from . import users_service
 
 
 async def upload_image(db: AsyncSession, image: UploadFile, current_user: User):
-    if not await user_service.check_user_permission(current_user, transactions.UPLOAD_IMAGE):
-        raise NoPermissions
+    await users_service.check_user_permission(
+        current_user, transactions.UPLOAD_IMAGE
+    )
         
     if image.content_type.split('/')[0] != "image":
         raise UnexpectedFileType
