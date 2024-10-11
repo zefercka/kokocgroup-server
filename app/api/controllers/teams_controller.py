@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.team import Team, NewMember, EditMember
+from ..schemas.team import Team, NewMember, EditMember, TeamList
 from ..schemas.user import User
 from ..services import auth_service, team_service
 from app.config import team_member_settings
@@ -11,7 +10,7 @@ from app.config import team_member_settings
 app = APIRouter()
 
 
-@app.get("", response_model=Team)
+@app.get("", response_model=TeamList)
 async def get_team_members(status: str = "present", db: AsyncSession = Depends(get_db)):
     if status == team_member_settings.PRESENT_STATUS:
         members = await team_service.get_all_active_team_members(db)
@@ -40,5 +39,12 @@ async def edit_team_member(member: EditMember,
     member = await team_service.edit_team_member(
         db, member=member, current_user=current_user
     )
-# @app.get("/", )
-# async def 
+    
+
+@app.delete("/{member_id}")
+async def delete_team_member(member_id: int, 
+                             current_user: User = Depends(auth_service.get_current_user),
+                             db: AsyncSession = Depends(get_db)):
+    await team_service.delete_team_member(
+        db, current_user=current_user, member_id=member_id
+    )

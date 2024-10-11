@@ -18,7 +18,7 @@ class MemberStatus(Enum):
     past = team_member_settings.PAST_STATUS
 
 
-class Team(BaseModel):
+class TeamList(BaseModel):
     trainers: list["Member"]
     goalkeepers: list["Member"]
     defenders: list["Member"]
@@ -54,3 +54,13 @@ class EditMember(BaseMember):
     id: int
     role: MemberRoles
     status: MemberStatus
+    
+
+class Team(BaseModel):
+    id: int
+    name: str
+    logo_url: str
+    score: Optional[int] = 0
+    
+    class Config:
+        from_attributes = True

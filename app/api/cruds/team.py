@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import team_member_settings
 
-from ..models import TeamMember
+from ..models import TeamMember, Team
 
 
 async def get_team_member_by_id(db: AsyncSession, team_member_id: int) -> TeamMember:
@@ -51,4 +51,14 @@ async def edit_team_member(db: AsyncSession, member: TeamMember, user_id: int,
     await db.commit()
     await db.refresh(member)
     return member
+
+
+async def delete_team_member(db: AsyncSession, member: TeamMember):
+    await db.delete(member)
+    await db.commit()
+    
+
+async def get_team_by_id(db: AsyncSession, team_id: int) -> Team:
+    results = await db.execute(select(Team).where(Team.id == team_id))
+    return results.scalars().first()
     

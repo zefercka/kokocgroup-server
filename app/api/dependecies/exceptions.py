@@ -95,3 +95,27 @@ class MemberNotFound(HTTPException):
             status_code=status.HTTP_404_NOT_FOUND, 
             detail="Участник не найден"
         )
+        
+
+class TeamNotFound(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Команда не найдена"
+        )
+        
+
+class LocationNotFound(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Локация не найдена"
+        )
+        
+
+class EventNotFound(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Событие не найдено"
+        )

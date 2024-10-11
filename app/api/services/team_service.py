@@ -5,7 +5,7 @@ from app.config import team_member_settings, transactions
 from ..cruds import team as crud
 from ..dependecies.exceptions import NoPermissions, MemberNotFound
 from ..models import TeamMember
-from ..schemas.team import Member, NewMember, Team, EditMember
+from ..schemas.team import Member, NewMember, TeamList, EditMember
 from ..schemas.user import User
 from ..services.user_service import check_user_permission, get_user
 
@@ -34,7 +34,7 @@ async def validate_member_model(member: TeamMember) -> Member:
     return validated_member
 
 
-async def validate_team_model(members: list[TeamMember]) -> Team:
+async def validate_team_model(members: list[TeamMember]) -> TeamList:
     team_members: dict[str, list[Member]] = {
         "trainers": [],
         "goalkeepers": [],
@@ -61,7 +61,7 @@ async def validate_team_model(members: list[TeamMember]) -> Team:
             elif member.position == team_member_settings.STRIKER_POSITION:
                 team_members["strikers"].append(validated_member)
     
-    team = Team(**team_members)
+    team = TeamList(**team_members)
 
     return team            
             
@@ -106,3 +106,17 @@ async def edit_team_member(db: AsyncSession, member: EditMember,
     )
     member = await validate_member_model(member)
     return member
+
+
+async def delete_team_member(db: AsyncSession, member_id: int, 
+                             current_user: User):
+    if not await check_user_permission(
+        current_user, transactions.DELETE_TEAM_MEMBER
+    ):
+        raise NoPermissions
+    
+    member_obj = await crud.get_team_member_by_id(db, team_member_id=member_id)
+    if member_obj is None:
+        raise MemberNotFound
+    
+    await crud.delete_team_member(db, member=member_obj)

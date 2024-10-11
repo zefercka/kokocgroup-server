@@ -34,6 +34,10 @@ class Transactions:
     
     ADD_TEAM_MEMBER = "add_team_member"
     EDIT_TEAM_MEMBER = "edit_team_member"
+    DELETE_TEAM_MEMBER = "delete_team_member"
+    
+    CREATE_EVENT = "create_event"
+    EDIT_EVENT = "edit_event"
     
     
 class TeamMemberSettings:
@@ -57,6 +61,8 @@ class DB_CONSTANTS:
     NEWS_UNAVAILABLE = "unavailable"
     
     BASE_ROLE = "BASE_ROLE_ID"
+    
+    BASE_TEAM = "BASE_TEAM_ID"
     
     
 

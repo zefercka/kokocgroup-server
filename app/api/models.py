@@ -29,12 +29,12 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True)
     email: Mapped[str] = mapped_column(String(256), unique=True)
-    first_name: Mapped[str]
-    last_name: Mapped[str]
-    patronymic: Mapped[Optional[str]]
+    first_name: Mapped[str] = mapped_column(String(64))
+    last_name: Mapped[str] = mapped_column(String(64))
+    patronymic: Mapped[str] = mapped_column(String(64), nullable=True)
     date_of_birth: Mapped[date]
-    phone_number: Mapped[Optional[str]]
-    avatar_url: Mapped[Optional[str]]
+    phone_number: Mapped[str] = mapped_column(String(64), nullable=True)
+    avatar_url: Mapped[str] = mapped_column(String(64), nullable=True)
     password_hash: Mapped[str]
     
     tokens: Mapped[List["RefreshToken"]] = relationship(
@@ -96,8 +96,7 @@ class News(Base):
               postgresql_ops={'news_search': 'gin_trgm_ops'},
         ),
     ) 
-    
-    #               postgresql_ops={'content': 'gin_trgm_ops'}
+
 
 class NewsAction(Base):
     __tablename__ = "news_actions"
@@ -159,3 +158,47 @@ class BaseSettings(BaseClear):
     
     name: Mapped[str] = mapped_column(String(64), primary_key=True)
     value: Mapped[str] = mapped_column(String(256))
+    
+    
+class Team(Base):
+    __tablename__ = "teams"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(256))
+    logo_url: Mapped[str] = mapped_column(String(256))
+    
+    
+class Location(Base):
+    __tablename__ = "locations"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    address: Mapped[str] = mapped_column(String(512))
+    
+    
+class Event(Base):
+    __tablename__ = "events"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    league: Mapped[str] = mapped_column(String(128))
+    tour: Mapped[str] = mapped_column(String(128), nullable=True)
+    start_date: Mapped[datetime]
+    end_date: Mapped[datetime] = mapped_column(nullable=True)
+    location_id: Mapped[int] = mapped_column(
+        ForeignKey("locations.id", ondelete="RESTRICT", onupdate="CASCADE"), 
+        nullable=True
+    )
+    first_team_id: Mapped[int] = mapped_column(
+        ForeignKey("teams.id", ondelete="RESTRICT", onupdate="CASCADE")
+    )
+    second_team_id: Mapped[int] = mapped_column(
+        ForeignKey("teams.id", ondelete="RESTRICT", onupdate="CASCADE")
+    )
+    first_team_score: Mapped[int] = mapped_column(server_default="0")
+    second_team_score: Mapped[int] = mapped_column(server_default="0")
+    
+    first_team: Mapped["Team"] = relationship(lazy="selectin", 
+                                              foreign_keys=[first_team_id])
+    second_team: Mapped["Team"] = relationship(lazy="selectin", 
+                                               foreign_keys=[second_team_id])
+    location: Mapped["Location"] = relationship(lazy="selectin")
