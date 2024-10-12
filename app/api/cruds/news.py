@@ -69,13 +69,15 @@ async def get_all_news(db: AsyncSession, limit: int, offset: int,
         # Filter by category if provided
         query = query.where(News.category_name == category)
     if search is not None:
-        search = ' & '.join(search.split())
-        # Filter by query if provided
         query = query.where(
-            func.to_tsvector(
-                func.coalesce(News.title, '') + ' ' +
-                func.coalesce(News.content, ''))
-            .op('@@')(func.to_tsquery(search))
+            or_(
+                News.title.icontains(search),
+                News.content.icontains(search),
+                func.to_tsvector(
+                    func.coalesce(News.title, '') + ' ' +
+                    func.coalesce(News.content, ''))
+                .op('@@')(func.to_tsquery(' & '.join(search.split())))
+            )
         )
 
     results = await db.execute(query)

@@ -75,7 +75,7 @@ async def update_news(db: AsyncSession, news: News, current_user: User) -> News:
     
     category = await crud.get_news_category(db, news.category_name)
     if category is None:
-        raise CategotyNotFound
+        raise CategoryNotFound
     
     news = await crud.update_news(
         db, user_id=current_user.id, news=old_news, 
