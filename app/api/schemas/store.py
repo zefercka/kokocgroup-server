@@ -1,21 +1,13 @@
-from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
-
-
-class Males(Enum):
-    MALE = "муж"
-    FEMALE = "жен"
-    UNI = "муж/жен"
+from pydantic import BaseModel, Field, field_validator
 
 
 class BaseStoreItem(BaseModel):
-    title: str
+    title: str = Field(min_length=4, max_length=128)
     price: int
     description: str
     category_name: str
-    male: Males
     image_url: str
     sizes: Optional[list[str]] = []
     
@@ -38,6 +30,6 @@ class StoreItem(BaseStoreItem):
     
     
 class CreateStoreItem(BaseStoreItem):
-    
+    pass
     
     

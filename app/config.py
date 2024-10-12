@@ -47,6 +47,10 @@ class Transactions:
     CREATE_EVENT = "create_event"
     EDIT_EVENT = "edit_event"
     
+    CREATE_STORE_ITEM = "create_store_item"
+    EDIT_STORE_ITEM = "create_store_item"
+    DELETE_STORE_ITEM = "delete_store_item"
+    
     
 class TeamMemberSettings:
     # Играют в текущем составе

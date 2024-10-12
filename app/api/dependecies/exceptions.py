@@ -81,7 +81,7 @@ class NewsNotFound(HTTPException):
         )
         
 
-class CategotyNotFound(HTTPException):
+class CategoryNotFound(HTTPException):
     def __init__(self, ):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -118,4 +118,12 @@ class EventNotFound(HTTPException):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Событие не найдено"
+        )
+        
+
+class EmptyObject(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Объект пустой"
         )

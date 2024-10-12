@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import db_constants, transactions
 
 from ..cruds import news as crud
-from ..dependecies.exceptions import CategotyNotFound, NewsNotFound
+from ..dependecies.exceptions import CategoryNotFound, NewsNotFound
 from ..schemas.news import News
 from ..schemas.user import User
 from .users_service import check_user_permission
@@ -48,7 +48,7 @@ async def create_news(db: AsyncSession, news: News, current_user: User) -> News:
 
     category = await crud.get_news_category(db, news.category_name)
     if category is None:
-        raise CategotyNotFound
+        raise CategoryNotFound
     
     news = await crud.add_news(
         db, user_id=current_user.id, **news.model_dump(exclude=["id"])

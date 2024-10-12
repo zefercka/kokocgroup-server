@@ -223,7 +223,6 @@ class StoreItem(Base):
             "store_categories.name", ondelete="SET NULL", onupdate="CASCADE"
         )
     )
-    male: Mapped[str] = mapped_column(String(8))
     image_url: Mapped[str] = mapped_column(String(256))
     
     sizes: Mapped[List["Size"]] = relationship(
