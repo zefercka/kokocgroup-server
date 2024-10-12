@@ -41,10 +41,3 @@ async def remove_peremissions_from_role(db: AsyncSession,
     await db.commit()
     await db.refresh(role)
     return role
-
-
-# async def add_permission_to_role(db: AsyncSession, permission: str,
-#                                  role_id: int):
-#     results = await db.execute(
-#         select(Permission).where(Permission.name == permission)
-#     )

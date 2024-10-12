@@ -11,14 +11,17 @@ async def get_team_member_by_id(db: AsyncSession, team_member_id: int) -> TeamMe
 
 
 async def get_all_active_team_members(db: AsyncSession) -> list[TeamMember]:
-    results = await db.execute(select(TeamMember).where(TeamMember.status == team_member_settings.PRESENT_STATUS))
+    results = await db.execute(
+        select(TeamMember).
+        where(TeamMember.status == team_member_settings.PRESENT_STATUS)
+    )
     return results.scalars().all()
 
 
 async def get_all_inactive_team_members(db: AsyncSession) -> list[TeamMember]:
     results = await db.execute(
         select(TeamMember).where(
-            TeamMember.status == team_member_settings.PAST_STATUS
+                TeamMember.status == team_member_settings.PAST_STATUS
             )
         )
     return results.scalars.all()
@@ -28,7 +31,7 @@ async def add_team_member(db: AsyncSession, user_id: int, position: str,
                           height: int | None, weight: int | None, 
                           status: str, role: str) -> TeamMember:
     new_member = TeamMember(
-        user_id=user_id, status=status, role=role, position=position, 
+        user_id=user_id, status=status, role=role, position=position.lower(), 
         height=height, weight=weight
     )
     db.add(new_member)

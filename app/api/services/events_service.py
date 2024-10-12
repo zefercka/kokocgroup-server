@@ -12,8 +12,8 @@ from ..dependecies.exceptions import (EventNotFound, LocationNotFound,
 from ..schemas.event import CreateEvent, EditEvent, Event
 from ..schemas.team import EventTeam
 from ..schemas.user import User
-from ..services import teams_service
-from .users_service import check_user_permission
+from ..services import teams_service, locations_service
+from ..services.users_service import check_user_permission
 
 
 async def create_event(db: AsyncSession, event: CreateEvent, 
@@ -34,9 +34,7 @@ async def create_event(db: AsyncSession, event: CreateEvent,
         second_team_id = event.second_team_id
     
     if event.location_id != None:
-        location = await l_crud.get_location_by_id(db, event.location_id)
-        if location is None:
-            raise LocationNotFound
+        await locations_service.get_location(db, event.location_id)
     
     if first_team_id is None:
         first_team_id = await s_crud.get_settings(

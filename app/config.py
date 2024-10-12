@@ -40,6 +40,10 @@ class Transactions:
     EDIT_TEAM_MEMBER = "edit_team_member"
     DELETE_TEAM_MEMBER = "delete_team_member"
     
+    CREATE_LOCATION = "create_location"
+    EDIT_LOCATION = "edit_location"
+    DELETE_LOCATION = "delete_location"
+    
     CREATE_EVENT = "create_event"
     EDIT_EVENT = "edit_event"
     

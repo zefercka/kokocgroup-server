@@ -22,6 +22,13 @@ roles_permissions = Table(
     Column("permission", ForeignKey("permissions.name", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
 )
 
+store_items_sizes = Table(
+    "store_items_sizes",
+    Base.metadata,
+    Column("store_item_id", ForeignKey("store_items.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("size", ForeignKey("sizes.size", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -202,3 +209,40 @@ class Event(Base):
     second_team: Mapped["Team"] = relationship(lazy="selectin", 
                                                foreign_keys=[second_team_id])
     location: Mapped["Location"] = relationship(lazy="selectin")
+    
+
+class StoreItem(Base):
+    __tablename__ = "store_items"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(128))
+    price: Mapped[int]
+    description: Mapped[str]
+    category_name: Mapped[str] = mapped_column(
+        ForeignKey(
+            "store_categories.name", ondelete="SET NULL", onupdate="CASCADE"
+        )
+    )
+    male: Mapped[str] = mapped_column(String(8))
+    image_url: Mapped[str] = mapped_column(String(256))
+    
+    sizes: Mapped[List["Size"]] = relationship(
+        secondary="store_items_sizes", back_populates="items", lazy="selectin"
+    )
+    
+    
+class Size(BaseClear):
+    __tablename__ = "sizes"
+    
+    size: Mapped[str] = mapped_column(String(8), primary_key=True)
+    
+    items: Mapped[List["StoreItem"]] = relationship(
+        secondary="store_items_sizes", back_populates="sizes", lazy="selectin"
+    )
+    
+
+
+class StoreCategory(BaseClear):
+    __tablename__ = "store_categories"
+    
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)

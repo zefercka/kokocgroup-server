@@ -10,7 +10,9 @@ async def get_team_by_id(db: AsyncSession, team_id: int) -> Team:
 
 
 async def get_all_teams(db: AsyncSession, limit: int, offset: int):
-    results = await db.execute(select(Team).limit(limit).offset(offset))
+    results = await db.execute(
+        select(Team).order_by(Team.id).limit(limit).offset(offset)
+    )
     return results.scalars().all()
 
 

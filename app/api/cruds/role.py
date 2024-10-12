@@ -10,7 +10,9 @@ async def get_role_by_id(db: AsyncSession, role_id: int) -> Role | None:
 
 
 async def get_roles(db: AsyncSession, limit: int, offset: int) -> list[Role] | None:
-    results = await db.execute(select(Role).order_by(Role.id).limit(limit).offset(offset))
+    results = await db.execute(
+        select(Role).order_by(Role.id).limit(limit).offset(offset)
+    )
     return results.scalars().all()
 
 

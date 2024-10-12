@@ -23,7 +23,9 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
 
 
 async def get_users(db: AsyncSession, limit: int = 50, offset: int = 0) -> User | None:
-    results = await db.execute(select(User).order_by(User.id).limit(limit).offset(offset))
+    results = await db.execute(
+        select(User).order_by(User.id).limit(limit).offset(offset)
+    )
     return results.scalars().all()
 
 
