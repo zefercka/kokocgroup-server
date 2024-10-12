@@ -37,4 +37,7 @@ class StoreItem(BaseStoreItem):
     id: int
     
     
+class CreateStoreItem(BaseStoreItem):
+    
+    
     

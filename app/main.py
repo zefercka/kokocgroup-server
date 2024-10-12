@@ -11,6 +11,7 @@ from .api.controllers.roles_controller import app as role_controller
 from .api.controllers.store_controller import app as store_controller
 from .api.controllers.teams_controller import app as teams_controller
 from .api.controllers.users_controller import app as user_controller
+from .api.controllers.health_controller import app as health_controller
 
 app = FastAPI()
 
@@ -36,3 +37,4 @@ app.include_router(members_controller, prefix="/api/v1/teams/kokoc/members", tag
 app.include_router(events_controller, prefix="/api/v1/events", tags=["Events"])
 app.include_router(locations_controller, prefix="/api/v1/locations", tags=["Locations"])
 app.include_router(store_controller, prefix="/api/v1/store", tags=["Store"])
+app.include_router(health_controller, prefix="/api/v1/health", tags=["Health check"])

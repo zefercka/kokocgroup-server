@@ -14,4 +14,5 @@ RUN pip install -r requirements.txt
 # copy project
 COPY . .
 
+RUN apt-get update && apt-get install -y curl
 RUN cd app
