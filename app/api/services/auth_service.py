@@ -11,7 +11,7 @@ from ..cruds import refresh_token as token_crud
 from ..cruds import user as crud
 from ..dependecies import hash, jwt
 from ..dependecies.database import get_db
-from ..dependecies.exceptions import (InteralSystemError, InvalidEmail,
+from ..dependecies.exceptions import (InternalServerError, InvalidEmail,
                                       InvalidToken, TokenExpired, TokenRevoked,
                                       UnexpectedTokenType, UserNotFound)
 from ..schemas.authorization import Authorization
@@ -46,7 +46,7 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
         )
     except Exception as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
     
     return authorized_user
 
@@ -61,7 +61,7 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
             await crud.get_user_by_username(db, user_create.username) else True
     except Exception as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
     
     if is_unique_user is False:
         raise HTTPException(
@@ -79,7 +79,7 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
         return user
     except Exception as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
  
 
 async def authenticate_user(db: AsyncSession, login: str, 
@@ -98,7 +98,7 @@ async def authenticate_user(db: AsyncSession, login: str,
         return None
     except Exception as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
 
 async def logout_user(db: AsyncSession, token: Token):    
     try:
@@ -117,7 +117,7 @@ async def logout_user(db: AsyncSession, token: Token):
         raise InvalidToken
     except InvalidTokenError as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
         
 
 async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
@@ -150,7 +150,7 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
         raise InvalidToken
     except InvalidTokenError as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError
 
 
 async def get_current_token(auth_key: str = Security(token_key)) -> Token:
@@ -175,4 +175,4 @@ async def get_current_user(db: AsyncSession = Depends(get_db),
         raise InvalidToken
     except InvalidTokenError as err:
         logger.error(err)
-        raise InteralSystemError
+        raise InternalServerError

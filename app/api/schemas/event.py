@@ -11,6 +11,7 @@ class EventBase(BaseModel):
     tour: Optional[str] = None
     start_date: datetime
     end_date: Optional[datetime] = None
+    stream_url: Optional[str] = None
     
     class Config:
         from_attributes=True

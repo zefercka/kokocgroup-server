@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import db_constants, transactions
+from app.config import transactions
 
 from .. import models
 from ..cruds import location as crud

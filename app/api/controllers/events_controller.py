@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependecies.database import get_db
-from ..schemas.event import Event, CreateEvent, EditEvent
+from ..dependecies.enums import EventPages
+from ..schemas.event import CreateEvent, EditEvent, Event
 from ..schemas.user import User
-from ..services.auth_service import get_current_user
 from ..services import events_service
+from ..services.auth_service import get_current_user
 
 app = APIRouter()
 
@@ -20,10 +21,15 @@ async def create_event(event: CreateEvent,
     
 
 @app.get("", response_model=list[Event])
-async def get_all_events(limit: int = 10, offset: int = 0, page: str = "main",
+async def get_all_events(limit: int = 10, offset: int = 0, 
+                         page: EventPages = "main",
+                         opponent_id: int | None = None,
+                         year: int | None = None,
+                         month: int | None = None,
                          db: AsyncSession = Depends(get_db)):
     events = await events_service.get_all_events(
-        db, limit=limit, offset=offset, page=page
+        db, limit=limit, offset=offset, page=page, opponent_id=opponent_id,
+        year=year, month=month
     )
     return events
 
@@ -34,4 +40,13 @@ async def edit_event(event: EditEvent,
                      db: AsyncSession = Depends(get_db)):
     return await events_service.edit_event(
         db, event=event, current_user=current_user
+    )
+    
+
+@app.delete("/{event_id}", response_model=Event)
+async def delete_event(event_id: int, 
+                       current_user: User = Depends(get_current_user),
+                       db: AsyncSession = Depends(get_db)):
+    return await events_service.delete_event(
+        db, event_id=event_id, current_user=current_user
     )

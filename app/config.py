@@ -46,6 +46,7 @@ class Transactions:
     
     CREATE_EVENT = "create_event"
     EDIT_EVENT = "edit_event"
+    DELETE_EVENT = "delete_event"
     
     CREATE_STORE_ITEM = "create_store_item"
     EDIT_STORE_ITEM = "create_store_item"

@@ -203,6 +203,7 @@ class Event(Base):
     )
     first_team_score: Mapped[int] = mapped_column(server_default="0")
     second_team_score: Mapped[int] = mapped_column(server_default="0")
+    stream_url: Mapped[str] = mapped_column(String(256), nullable=True)
     
     first_team: Mapped["Team"] = relationship(lazy="selectin", 
                                               foreign_keys=[first_team_id])

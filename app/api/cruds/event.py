@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from loguru import logger
-from sqlalchemy import and_, select
+from sqlalchemy import and_, extract, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Event
@@ -12,9 +12,10 @@ async def create_event(db: AsyncSession, league: str, tour: str | None,
                        start_date: datetime, end_date: datetime | None, 
                        location_id: int | None, first_team_id: int, 
                        second_team_id: int, first_team_score: int, 
-                       second_team_score: int) -> Event:
-    """Creates a new event in the database.
-    
+                       second_team_score: int, stream_url: str) -> Event:
+    """
+    Creates an event in the database.
+
     Args:
         db (AsyncSession): SQLAlchemy AsyncSession object.
         league (str): League name.
@@ -26,18 +27,22 @@ async def create_event(db: AsyncSession, league: str, tour: str | None,
         second_team_id (int): Second team id.
         first_team_score (int): First team score.
         second_team_score (int): Second team score.
-    
+        stream_url (str): Event stream url.
+
     Returns:
         Event: Created event object.
     """
-
     event = Event(
         league=league, tour=tour, start_date=start_date.replace(tzinfo=None), 
-        end_date=end_date.replace(tzinfo=None),location_id=location_id, 
-        first_team_id=first_team_id, second_team_id=second_team_id, 
+        location_id=location_id, first_team_id=first_team_id, 
+        second_team_id=second_team_id, 
         first_team_score=first_team_score, 
-        second_team_score = second_team_score
+        second_team_score = second_team_score, stream_url=stream_url
     )
+    
+    if end_date:
+        event.end_date = end_date.replace(tzinfo=None)    
+    
     db.add(event)
     await db.commit()
     await db.refresh(event)
@@ -47,20 +52,32 @@ async def create_event(db: AsyncSession, league: str, tour: str | None,
 
 @logger.catch
 async def get_all_events(db: AsyncSession, limit: int, 
-                         offset: int) -> list[Event]:
-    """Gets all events from the database.
-    
-    Args:
-        db (AsyncSession): SQLAlchemy AsyncSession object.
-        limit (int): Number of events to return.
-        offset (int): Offset to start returning events from.
-    
-    Returns:
-        list[Event]: List of events.
-    """
-    results = await db.execute(
+                         offset: int, opponent_id: int | None,
+                         year: int | None, month: int | None) -> list[Event]:
+    query = (
         select(Event).order_by(Event.start_date).offset(offset).limit(limit)
     )
+    
+    print(year)
+    
+    if opponent_id:
+        query = query.where(
+            or_(
+                Event.first_team_id == opponent_id,
+                Event.second_team_id == opponent_id
+            )
+        )
+    if year:
+        query = query.where(
+            extract("year", Event.start_date) == year
+        )
+    if month:
+        query = query.where(
+            extract("month", Event.start_date) == month
+        )
+        
+    results = await db.execute(query)
+    
     return results.scalars().all()
 
 
@@ -193,3 +210,15 @@ async def edit_event(db: AsyncSession, event: Event, league: str, tour: str,
     await db.commit()
     await db.refresh(event)
     return event
+
+
+@logger.catch
+async def delete_event(db: AsyncSession, event: Event):
+    """Deletes an event from the database.
+    
+    Args:
+        db (AsyncSession): SQLAlchemy AsyncSession object.
+        event (Event): Event object to delete.
+    """
+    await db.delete(event)
+    await db.commit()

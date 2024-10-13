@@ -18,3 +18,7 @@ class MemberRoles(Enum):
     TRAINER= team_member_settings.TRAINER_ROLE
     ADMIN = team_member_settings.ADMIN_ROLE
     
+    
+class EventPages(Enum):
+    MAIN = "main"
+    EVENT = "event"
