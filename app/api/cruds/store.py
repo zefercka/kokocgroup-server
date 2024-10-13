@@ -2,20 +2,21 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..dependecies.enums import StoreItemFilters
 from ..models import Size, StoreCategory, StoreItem
 
 
 @logger.catch
 async def get_all_store_items(db: AsyncSession, limit: int, 
                               offset: int, filter: str,
-                              category_name: str) -> list[StoreItem]:
+                              category_name: str | None) -> list[StoreItem]:
     query = (select(StoreItem))
     
-    if filter == "new":
+    if filter == StoreItemFilters.NEW:
         query = query.order_by(StoreItem.created_at.desc())
-    elif filter == "expensive":
+    elif filter == StoreItemFilters.EXPENSIVE:
         query = query.order_by(StoreItem.price.desc())
-    elif filter == "cheap":
+    elif filter == StoreItemFilters.CHEAP:
         query = query.order_by(StoreItem.price.asc())
     else:
         query = query.order_by(StoreItem.id)

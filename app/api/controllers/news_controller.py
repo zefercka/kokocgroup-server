@@ -25,7 +25,7 @@ async def get_all_deleted_news(limit: int = 16, offset: int = 0,
                                db: AsyncSession = Depends(get_db)):
     news = await news_service.get_all_deleted_news(
         db, limit=limit, offset=offset, year=year, month=month, 
-        current_user=current_user
+        current_user=current_user, category=category
     )
     return news
 

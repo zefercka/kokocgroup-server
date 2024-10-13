@@ -54,6 +54,21 @@ async def create_event(db: AsyncSession, league: str, tour: str | None,
 async def get_all_events(db: AsyncSession, limit: int, 
                          offset: int, opponent_id: int | None,
                          year: int | None, month: int | None) -> list[Event]:
+    """
+    Gets all events from the database, filtered by given year and month if provided.
+
+    Args:
+        db (AsyncSession): SQLAlchemy AsyncSession object.
+        limit (int): The maximum number of events to return.
+        offset (int): The number of events to skip before returning.
+        opponent_id (int | None): The id of the opponent team to filter by.
+        year (int | None): The year to filter by, if provided.
+        month (int | None): The month to filter by, if provided.
+
+    Returns:
+        list[Event]: The list of events.
+    """
+                  
     query = (
         select(Event).order_by(Event.start_date).offset(offset).limit(limit)
     )
@@ -127,7 +142,7 @@ async def get_finished_events(db: AsyncSession, limit: int,
                 Event.end_date != None,
                 Event.end_date <= datetime.now()
             )
-        ).order_by(Event.start_date).offset(offset).limit(limit)
+        ).order_by(Event.start_date.desc()).offset(offset).limit(limit)
     )
     return results.scalars().all()
 
@@ -153,7 +168,7 @@ async def get_future_events(db: AsyncSession, limit: int,
             and_(
                 Event.start_date > datetime.now()
             )
-        ).order_by(Event.start_date).offset(offset).limit(limit)
+        ).order_by(Event.start_date.asc()).offset(offset).limit(limit)
     )
     return results.scalars().all()
 

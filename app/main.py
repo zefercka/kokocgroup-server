@@ -25,11 +25,19 @@ async def lifespan(app: FastAPI):
         compression="zip"
     )
 
-    scheduled_cleaner.start()
-    print("started")
+    try:
+        scheduled_cleaner.start()
+        logger.info("Cleaner is running")
+    except Exception as err:
+        logger.error(err)
+        
     yield
-    scheduled_cleaner.shutdown()
-    print("finished")
+    
+    try:
+        scheduled_cleaner.shutdown()
+        logger.info("Cleaner is stopped")
+    except Exception as err:
+        logger.error(err)
 
 
 app = FastAPI(lifespan=lifespan)

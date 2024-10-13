@@ -7,6 +7,7 @@ from ..services import auth_service, users_service
 
 app = APIRouter()
 
+
 @app.get("/{user_id}", response_model=SendUser)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await users_service.get_user(db, user_id)
@@ -32,9 +33,3 @@ async def remove_role_user(user_id: int, role_id: int, current_user: User = Depe
         db, current_user=current_user, user_id=user_id, role_id=role_id
     )
     return user
-
-
-# Delete after
-# @app.post("/permission")
-# async def add_permission(user_id: int, permission_id: int, db: AsyncSession = Depends(get_db)):
-    

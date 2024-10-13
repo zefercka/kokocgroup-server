@@ -11,22 +11,58 @@ from .dependecies.database import Base, BaseClear
 users_roles = Table(
     "users_roles",
     Base.metadata,
-    Column("user_id", ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"), primary_key=True),
-    Column("role_id", ForeignKey("roles.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
+    Column(
+        "user_id", 
+        ForeignKey(
+            "users.id", ondelete="NO ACTION", onupdate="CASCADE"
+        ), 
+        primary_key=True
+    ),
+    Column(
+        "role_id", 
+        ForeignKey(
+            "roles.id", ondelete="CASCADE", onupdate="CASCADE"
+        ), 
+        primary_key=True
+    )
 )
 
 roles_permissions = Table(
     "roles_permissions",
     Base.metadata,
-    Column("role_id", ForeignKey("roles.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
-    Column("permission", ForeignKey("permissions.name", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
+    Column(
+        "role_id", 
+        ForeignKey(
+            "roles.id", ondelete="CASCADE", onupdate="CASCADE"
+        ), 
+        primary_key=True
+    ),
+    Column(
+        "permission", 
+        ForeignKey(
+            "permissions.name", ondelete="CASCADE", onupdate="CASCADE"
+        ),
+        primary_key=True
+    )
 )
 
 store_items_sizes = Table(
     "store_items_sizes",
     Base.metadata,
-    Column("store_item_id", ForeignKey("store_items.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
-    Column("size", ForeignKey("sizes.size", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
+    Column(
+        "store_item_id", 
+        ForeignKey(
+            "store_items.id", ondelete="CASCADE", onupdate="CASCADE"
+        ), 
+        primary_key=True
+    ),
+    Column(
+        "size", 
+        ForeignKey(
+            "sizes.size", ondelete="CASCADE", onupdate="CASCADE"
+        ), 
+        primary_key=True
+    )
 )
 
 
@@ -84,7 +120,9 @@ class News(Base):
     title: Mapped[str] = mapped_column(String(256))
     news_date: Mapped[datetime]
     content: Mapped[str] = mapped_column(String)
-    category_name: Mapped[str] = mapped_column(ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE"))
+    category_name: Mapped[str] = mapped_column(
+        ForeignKey("news_categories.name", ondelete="SET NULL", onupdate="CASCADE")
+    )
     image_url: Mapped[str] = mapped_column(String(256))
     status: Mapped[str] = mapped_column(default=db_constants.NEWS_AVAILABLE)
     
@@ -143,7 +181,9 @@ class FileUpload(Base):
     __tablename__ = "file_uploads"
     
     file_name: Mapped[str] = mapped_column(String(64), primary_key=True)
-    user_id: Mapped[int] =  mapped_column(ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE"))
+    user_id: Mapped[int] =  mapped_column(
+        ForeignKey("users.id", ondelete="NO ACTION", onupdate="CASCADE")
+    )
     
 
 class TeamMember(Base):
