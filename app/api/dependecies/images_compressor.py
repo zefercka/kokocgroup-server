@@ -1,9 +1,11 @@
 from PIL import Image
 from fastapi import UploadFile
+from loguru import logger
 
 TARGET_SIZE_MB = 5
 
 
+@logger.catch
 async def compress_and_save_image(image: UploadFile, path: str):
     img = Image.open(image.file)
     img = img.convert("RGB")

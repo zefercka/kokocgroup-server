@@ -69,7 +69,6 @@ async def get_all_news(limit: int = 16, offset: int = 0,
 @app.get("/{news_id}", response_model=News)
 async def get_news(news_id: int, db: AsyncSession = Depends(get_db)):
     news = await news_service.get_news(db, news_id)
-    print(news)
     return news
 
 

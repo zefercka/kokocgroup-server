@@ -68,20 +68,21 @@ class TeamMemberSettings:
     STRIKER_POSITION = "нападающий"
 
 
-class DB_CONSTANTS:
+class DBConstants:
     NEWS_AVAILABLE = "available"
     NEWS_UNAVAILABLE = "unavailable"
     
     BASE_ROLE = "BASE_ROLE_ID"
-    
     BASE_TEAM = "BASE_TEAM_ID"
+    
+    DELETE_NEWS_AFTER = 7
     
     
 
 settings = Settings()
 transactions = Transactions()
 team_member_settings = TeamMemberSettings()
-db_constants = DB_CONSTANTS()
+db_constants = DBConstants()
 
 def get_db_url():
     return (f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@"

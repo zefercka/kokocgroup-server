@@ -86,7 +86,6 @@ async def update_news(db: AsyncSession, news: News, current_user: User) -> News:
 
 async def get_all_categories(db: AsyncSession) -> list[str]:
     categories = await crud.get_all_news_categories(db)
-    print([categorie.name for categorie in categories])
     return [categorie.name for categorie in categories]
 
 

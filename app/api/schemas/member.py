@@ -1,21 +1,9 @@
 from datetime import date
-from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel
 
-from app.config import team_member_settings
-
-
-class MemberRoles(Enum):
-    player = team_member_settings.PLAYER_ROLE
-    trainer= team_member_settings.TRAINER_ROLE
-    admin = team_member_settings.ADMIN_ROLE
-    
-
-class MemberStatus(Enum):
-    present = team_member_settings.PRESENT_STATUS
-    past = team_member_settings.PAST_STATUS
+from ..dependecies.enums import MemberRoles, MemberStatuses
 
 
 class TeamList(BaseModel):
@@ -47,10 +35,10 @@ class Member(BaseMember):
 
 class NewMember(BaseMember):
     role: MemberRoles
-    status: MemberStatus
+    status: MemberStatuses
     
 
 class EditMember(BaseMember):
     id: int
     role: MemberRoles
-    status: MemberStatus
+    status: MemberStatuses

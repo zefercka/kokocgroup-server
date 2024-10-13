@@ -1,14 +1,17 @@
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Team
 
 
+@logger.catch
 async def get_team_by_id(db: AsyncSession, team_id: int) -> Team:
     results = await db.execute(select(Team).where(Team.id == team_id))
     return results.scalars().first()
 
 
+@logger.catch
 async def get_all_teams(db: AsyncSession, limit: int, offset: int):
     results = await db.execute(
         select(Team).order_by(Team.id).limit(limit).offset(offset)
@@ -16,6 +19,7 @@ async def get_all_teams(db: AsyncSession, limit: int, offset: int):
     return results.scalars().all()
 
 
+@logger.catch
 async def create_team(db: AsyncSession, name: str, logo_url: str) -> Team:
     team = Team(name=name, logo_url=logo_url)
     db.add(team)
@@ -25,6 +29,7 @@ async def create_team(db: AsyncSession, name: str, logo_url: str) -> Team:
     return team
 
 
+@logger.catch
 async def edit_team(db: AsyncSession, team: Team, name: str, 
                     logo_url: str) -> Team:
     team.name = name
@@ -35,6 +40,7 @@ async def edit_team(db: AsyncSession, team: Team, name: str,
     return team
 
 
+@logger.catch
 async def delete_team(db: AsyncSession, team: Team):
     await db.delete(team)
     await db.commit()

@@ -1,8 +1,11 @@
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import StoreItem, Size, StoreCategory
+from ..models import Size, StoreCategory, StoreItem
 
+
+@logger.catch
 async def get_all_store_items(db: AsyncSession, limit: int, 
                               offset: int, filter: str,
                               category_name: str) -> list[StoreItem]:
@@ -26,11 +29,13 @@ async def get_all_store_items(db: AsyncSession, limit: int,
     return results.scalars().all()
 
 
+@logger.catch
 async def get_all_sizes(db: AsyncSession) -> list[Size]:
     results = await db.execute(select(Size))
     return results.scalars().all()
 
 
+@logger.catch
 async def get_sizes(db: AsyncSession, sizes: list[str]):
     results = await db.execute(
         select(Size).where(Size.size.in_(sizes))   
@@ -38,6 +43,7 @@ async def get_sizes(db: AsyncSession, sizes: list[str]):
     return results.scalars().all()
 
 
+@logger.catch
 async def get_category_by_name(db: AsyncSession, name: str) -> StoreCategory:
     results = await db.execute(
         select(StoreCategory).where(StoreCategory.name == name)    
@@ -45,6 +51,7 @@ async def get_category_by_name(db: AsyncSession, name: str) -> StoreCategory:
     return results.scalars().first()
 
 
+@logger.catch
 async def create_store_item(db: AsyncSession, title: str, price: int, 
                             description: str, category_name: str, 
                             image_url: str, sizes: list[Size]) -> StoreItem:
@@ -59,6 +66,7 @@ async def create_store_item(db: AsyncSession, title: str, price: int,
     return store_item
 
 
+@logger.catch
 async def update_store_item(db: AsyncSession, store_item: StoreItem, 
                             title: str, price: str, description: str, 
                             category_name: str, image_url: str,
@@ -75,6 +83,7 @@ async def update_store_item(db: AsyncSession, store_item: StoreItem,
     return store_item
 
 
+@logger.catch
 async def get_store_item_by_id(db: AsyncSession, 
                                store_item_id: int) -> StoreItem:
     results = await db.execute(
@@ -83,11 +92,13 @@ async def get_store_item_by_id(db: AsyncSession,
     return results.scalars().first()
 
 
+@logger.catch
 async def delete_store_item(db: AsyncSession, store_item: StoreItem):
     await db.delete(store_item)
     await db.commit()
     
 
+@logger.catch
 async def get_all_store_categories(db: AsyncSession, limit: int, 
                                    offset: int) -> list[StoreCategory]:
     results = await db.execute(

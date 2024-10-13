@@ -1,9 +1,13 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 from .api.controllers.auth_controller import app as auth_controller
 from .api.controllers.events_controller import app as events_controller
 from .api.controllers.files_controller import app as files_controller
+from .api.controllers.health_controller import app as health_controller
 from .api.controllers.locations_controller import app as locations_controller
 from .api.controllers.members_controller import app as members_controller
 from .api.controllers.news_controller import app as news_controller
@@ -11,9 +15,24 @@ from .api.controllers.roles_controller import app as role_controller
 from .api.controllers.store_controller import app as store_controller
 from .api.controllers.teams_controller import app as teams_controller
 from .api.controllers.users_controller import app as user_controller
-from .api.controllers.health_controller import app as health_controller
+from .api.dependecies.cleaner import scheduled_cleaner
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.add(
+        "app/logs/file_{time:YYYY-MM-DD}.log", rotation="1 day", 
+        compression="zip"
+    )
+
+    scheduled_cleaner.start()
+    print("started")
+    yield
+    scheduled_cleaner.shutdown()
+    print("finished")
+
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
     "*"

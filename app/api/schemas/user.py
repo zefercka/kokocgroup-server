@@ -1,14 +1,14 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ..schemas.role import Role
 
 
 class UserBase(BaseModel):
-    username: str
-    email: str
+    username: str = Field(min_length=4, max_length=64)
+    email: str = Field(min_length=4, max_length=256)
     first_name: str
     last_name: str
     patronymic: Optional[str] = None
@@ -18,7 +18,7 @@ class UserBase(BaseModel):
 
 
 class CreateUser(UserBase):
-    password: str
+    password: str = Field(min_length=8, max_length=64)
     
 
 class User(UserBase):

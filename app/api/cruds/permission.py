@@ -2,8 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import Permission, Role
+from loguru import logger
 
 
+@logger.catch
 async def get_permission(db: AsyncSession, permission: str) -> Permission:
     results = await db.execute(
         select(Permission).where(Permission.name == permission)
@@ -11,6 +13,7 @@ async def get_permission(db: AsyncSession, permission: str) -> Permission:
     return results.scalars().first()
 
 
+@logger.catch
 async def get_permissions(db: AsyncSession, 
                           permissions: list[str]) -> list[Permission]:
     results = await db.execute(
@@ -19,6 +22,7 @@ async def get_permissions(db: AsyncSession,
     return results.scalars().all()
 
 
+@logger.catch
 async def add_permissions_to_role(db: AsyncSession, 
                                   permissons: list[str], role: Role) -> Role:
     permissons = await get_permissions(
@@ -31,6 +35,7 @@ async def add_permissions_to_role(db: AsyncSession,
     return role
 
 
+@logger.catch
 async def remove_peremissions_from_role(db: AsyncSession, 
                                        permissions: list[str], 
                                        role: Role) -> Role:

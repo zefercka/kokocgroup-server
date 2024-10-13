@@ -1,14 +1,18 @@
+import re
+
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..cruds import refresh_token as token_crud
 from ..cruds import user as crud
 from ..dependecies import hash, jwt
 from ..dependecies.database import get_db
-from ..dependecies.exceptions import (InvalidToken, TokenExpired, TokenRevoked,
+from ..dependecies.exceptions import (InteralSystemError, InvalidEmail,
+                                      InvalidToken, TokenExpired, TokenRevoked,
                                       UnexpectedTokenType, UserNotFound)
 from ..schemas.authorization import Authorization
 from ..schemas.token import SendToken, Token
@@ -26,29 +30,38 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
             detail="Неверный логин или пароль",
         )
         
-    access_token = await jwt.create_access_token(data={"sub": user.id})
-    refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
-    
-    await token_crud.add_token(
-        db, token=refresh_token.token, expired_date=refresh_token.expires_at,
-        user_id=user.id
-    )
-    
-    user = SendUser.model_validate(user.model_dump(exclude=["roles"]))
-    authorized_user = AuthorizedUser(
-        user=user, access_token=access_token.token, 
-        expires_at=access_token.expires_at, refresh_token=refresh_token.token
-    )
-    
-    print(authorized_user)
+    try:
+        access_token = await jwt.create_access_token(data={"sub": user.id})
+        refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
+        
+        await token_crud.add_token(
+            db, token=refresh_token.token, expired_date=refresh_token.expires_at,
+            user_id=user.id
+        )
+
+        user = SendUser.model_validate(user.model_dump(exclude=["roles"]))
+        authorized_user = AuthorizedUser(
+            user=user, access_token=access_token.token, 
+            expires_at=access_token.expires_at, refresh_token=refresh_token.token
+        )
+    except Exception as err:
+        logger.error(err)
+        raise InteralSystemError
     
     return authorized_user
 
 
 async def register_user(db: AsyncSession, user_create: CreateUser) -> AuthorizedUser:
-    is_unique_user = \
-        False if await crud.get_user_by_email(db, user_create.email) or \
-        await crud.get_user_by_username(db, user_create.username) else True
+    if not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", user_create.email):
+        raise InvalidEmail
+    
+    try:
+        is_unique_user = \
+            False if await crud.get_user_by_email(db, user_create.email) or \
+            await crud.get_user_by_username(db, user_create.username) else True
+    except Exception as err:
+        logger.error(err)
+        raise InteralSystemError
     
     if is_unique_user is False:
         raise HTTPException(
@@ -56,27 +69,36 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
             detail="Пользователь с таким логином или почтой уже существует",
         )
     
-    user = await crud.add_user(db, **user_create.model_dump())
-    user = await users_service.add_base_role_to_user(db, user=user)
-    
-    data = Authorization(login=user_create.email, password=user_create.password)
-    user = await authorize_user(db, data)
-    
-    return user
+    try:
+        user = await crud.add_user(db, **user_create.model_dump())
+        user = await users_service.add_base_role_to_user(db, user=user)
+        
+        data = Authorization(login=user_create.email, password=user_create.password)
+        user = await authorize_user(db, data)
+        
+        return user
+    except Exception as err:
+        logger.error(err)
+        raise InteralSystemError
  
 
-async def authenticate_user(db: AsyncSession, login: str, password: str) -> User | None:
-    user = \
-        await crud.get_user_by_username(db, username=login) or \
-        await crud.get_user_by_email(db, email=login)
-    if user is None:
+async def authenticate_user(db: AsyncSession, login: str, 
+                            password: str) -> User | None:
+    
+    try:
+        user = \
+            await crud.get_user_by_username(db, username=login) or \
+            await crud.get_user_by_email(db, email=login)
+        if user is None:
+            return None
+
+        if await hash.verify_password(password, user.password_hash):
+            return User.model_validate(user)
+        
         return None
-
-    if await hash.verify_password(password, user.password_hash):
-        return User.model_validate(user)
-
-    return None
-
+    except Exception as err:
+        logger.error(err)
+        raise InteralSystemError
 
 async def logout_user(db: AsyncSession, token: Token):    
     try:
@@ -94,11 +116,8 @@ async def logout_user(db: AsyncSession, token: Token):
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        print(err)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка обработки токена"
-        )
+        logger.error(err)
+        raise InteralSystemError
         
 
 async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
@@ -130,11 +149,8 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        print(err)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка обработки токена"
-        )
+        logger.error(err)
+        raise InteralSystemError
 
 
 async def get_current_token(auth_key: str = Security(token_key)) -> Token:
@@ -145,7 +161,6 @@ async def get_current_token(auth_key: str = Security(token_key)) -> Token:
 async def get_current_user(db: AsyncSession = Depends(get_db), 
                            token: Token = Depends(get_current_token)) -> User:    
     try:
-        
         user_id = await jwt.get_user_id(token=token)            
         user = await crud.get_user_by_id(db, user_id=user_id)
         
@@ -159,8 +174,5 @@ async def get_current_user(db: AsyncSession = Depends(get_db),
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        print(err)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка обработки токена"
-        )
+        logger.error(err)
+        raise InteralSystemError

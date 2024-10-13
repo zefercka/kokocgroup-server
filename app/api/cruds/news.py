@@ -1,14 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import and_, extract, select, or_, func
+from loguru import logger
+from sqlalchemy import and_, delete, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import db_constants
 
 from ..models import News, NewsAction, NewsCategory
-# from unidecode import unidecode
 
 
+@logger.catch
 async def get_news_by_id(db: AsyncSession, news_id: int) -> News | None:
     """
     Get a news item from the database by its ID.
@@ -24,6 +25,7 @@ async def get_news_by_id(db: AsyncSession, news_id: int) -> News | None:
     return results.scalars().first()
 
 
+@logger.catch
 async def get_all_news(db: AsyncSession, limit: int, offset: int, 
                        year: int | None, month: int | None,
                        category: str | None, search: str | None) -> list[News]:
@@ -84,6 +86,7 @@ async def get_all_news(db: AsyncSession, limit: int, offset: int,
     return results.scalars().all()
 
 
+@logger.catch
 async def get_all_deleted_news(db: AsyncSession, limit: int, offset: int, 
                                year: int | None = None, 
                                month: int | None = None,
@@ -126,7 +129,7 @@ async def get_all_deleted_news(db: AsyncSession, limit: int, offset: int,
     return results.scalars().all()
 
 
-
+@logger.catch
 async def get_news_category(db: AsyncSession, name: str) -> NewsCategory | None:
     """
     Get a news category by name from the database.
@@ -141,6 +144,8 @@ async def get_news_category(db: AsyncSession, name: str) -> NewsCategory | None:
     results = await db.execute(select(NewsCategory).where(NewsCategory.name == name))
     return results.scalars().first()
 
+
+@logger.catch
 async def add_news_action(db: AsyncSession, user_id: int, news_id: int, 
                           action_type: str) -> NewsAction:
     """
@@ -164,7 +169,7 @@ async def add_news_action(db: AsyncSession, user_id: int, news_id: int,
     return news_action
 
 
-
+@logger.catch
 async def add_news(db: AsyncSession, user_id: int, title: str, 
                    news_date: datetime, content: str, category_name: str,
                    image_url: str) -> News:
@@ -199,7 +204,7 @@ async def add_news(db: AsyncSession, user_id: int, title: str,
     return news
 
 
-
+@logger.catch
 async def delete_news(db: AsyncSession, user_id: int, news: News):
     if news.status == db_constants.NEWS_AVAILABLE:
         news.status = db_constants.NEWS_UNAVAILABLE
@@ -212,7 +217,7 @@ async def delete_news(db: AsyncSession, user_id: int, news: News):
         await db.commit()
 
         
-    
+@logger.catch    
 async def update_news(db: AsyncSession, user_id, news: News, title: str, 
                       news_date: str, content: str, category_name: str, 
                       image_url: str) -> News | None:    
@@ -230,13 +235,14 @@ async def update_news(db: AsyncSession, user_id, news: News, title: str,
     
     return news
     
-    
+   
+@logger.catch 
 async def get_all_news_categories(db: AsyncSession) -> list[NewsCategory]:
     results = await db.execute(select(NewsCategory))
-    print(results.scalars().all())
     return results.scalars().all()
 
 
+@logger.catch
 async def get_all_scheduled_news(db: AsyncSession, 
                                  limit: int, offset: int, year: int | None, 
                                  month: int | None) -> list[News]:
@@ -264,3 +270,27 @@ async def get_all_scheduled_news(db: AsyncSession,
         
     results = await db.execute(query)
     return results.scalars().all()
+
+
+@logger.catch
+async def delete_expired_news(db: AsyncSession):
+    results = await db.execute(
+        select(NewsAction.news_id).where(
+            and_(
+                NewsAction.type == "delete",
+                NewsAction.created_at.op('+')(
+                    timedelta(days=db_constants.DELETE_NEWS_AFTER)) 
+                < datetime.now()
+            )
+        )
+    )
+    news_ids = results.scalars().all()
+    
+    await db.execute(
+        delete(News).where(
+            and_(
+                News.status == db_constants.NEWS_UNAVAILABLE,   
+                News.id.in_(news_ids)        
+            )
+        )
+    )

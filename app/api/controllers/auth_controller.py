@@ -22,7 +22,6 @@ async def register(user: CreateUser, db: AsyncSession = Depends(get_db)):
     
 @app.post("/refresh", response_model=SendToken)
 async def update_tokens(refresh_token: Token = Depends(auth_service.get_current_token),  db: AsyncSession = Depends(get_db)):
-    print(refresh_token.token)
     return await auth_service.new_tokens(db, refresh_token)
     
     
