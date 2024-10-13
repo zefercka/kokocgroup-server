@@ -74,7 +74,10 @@ async def add_team_member(db: AsyncSession, member: NewMember,
         # Вызовет исключение, если юзера нет
         await get_user(db, member.user_id)
     
-    member = await crud.add_team_member(db, **member.model_dump())
+    member = await crud.add_team_member(
+        db, **member.model_dump(exclude=["role", "status"]),
+        role=member.role.value, status=member.status.value
+    )
     member = await validate_member_model(member)
     return member
 

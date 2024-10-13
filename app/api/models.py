@@ -196,6 +196,7 @@ class TeamMember(Base):
     position: Mapped[str] = mapped_column(nullable=True)
     height: Mapped[int] = mapped_column(nullable=True)
     weight: Mapped[int] = mapped_column(nullable=True)
+    number: Mapped[int] = mapped_column(nullable=True)
     
     user: Mapped["User"] = relationship(lazy="selectin")
     

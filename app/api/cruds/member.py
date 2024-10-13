@@ -35,10 +35,11 @@ async def get_all_inactive_team_members(db: AsyncSession) -> list[TeamMember]:
 @logger.catch
 async def add_team_member(db: AsyncSession, user_id: int, position: str, 
                           height: int | None, weight: int | None, 
-                          status: str, role: str) -> TeamMember:
+                          status: str, role: str, 
+                          number: int | None) -> TeamMember:
     new_member = TeamMember(
         user_id=user_id, status=status, role=role, position=position.lower(), 
-        height=height, weight=weight
+        height=height, weight=weight, number=number
     )
     db.add(new_member)
     await db.commit()
@@ -51,13 +52,14 @@ async def add_team_member(db: AsyncSession, user_id: int, position: str,
 async def edit_team_member(db: AsyncSession, member: TeamMember, user_id: int, 
                            position: str, height: int | None, 
                            weight: int | None, status: str, 
-                           role: str) -> TeamMember:
+                           role: str, number: int | None) -> TeamMember:
     member.user_id = user_id
     member.position = position
     member.height = height
     member.weight = weight
     member.status = status
     member.role = role
+    member.number = number
     await db.commit()
     await db.refresh(member)
     return member

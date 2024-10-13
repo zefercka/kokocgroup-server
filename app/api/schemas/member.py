@@ -19,6 +19,7 @@ class BaseMember(BaseModel):
     position: str
     height: Optional[int] = None
     weight: Optional[int] = None
+    number: Optional[int] = None
     user_id: int
     
     class Config:
