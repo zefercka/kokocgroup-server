@@ -166,6 +166,14 @@ async def delete_event(db: AsyncSession, event_id: int, current_user: User):
         raise EventNotFound
     
     await crud.delete_event(db, event=event_obj)
+    
+
+async def get_event_by_id(db: AsyncSession, event_id: int):
+    event_obj = await crud.get_event_by_id(db, event_id=event_id)
+    if event_obj is None:
+        raise EventNotFound
+    
+    return await validate_event_model(event_obj)
 
 
 async def validate_event_model(event: models.Event) -> Event:

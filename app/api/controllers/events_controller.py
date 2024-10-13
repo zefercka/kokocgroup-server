@@ -34,6 +34,11 @@ async def get_all_events(limit: int = 10, offset: int = 0,
     return events
 
 
+@app.get("/{event_id}", response_model=Event)
+async def get_event(event_id: int, db: AsyncSession = Depends(get_db)):
+    return await events_service.get_event_by_id(db, event_id=event_id)
+
+
 @app.put("", response_model=Event)
 async def edit_event(event: EditEvent, 
                      current_user: User = Depends(get_current_user),
