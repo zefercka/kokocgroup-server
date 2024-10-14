@@ -23,7 +23,7 @@ async def get_store_categories(limit: int = 20, offset: int = 0,
 @app.get("", response_model=list[StoreItem])
 async def get_all_store_items(limit: int = 10, offset: int = 0, 
                               category: str | None = None,
-                              filter: StoreItemFilters = "new",
+                              filter: StoreItemFilters = StoreItemFilters.NEW,
                               db: AsyncSession = Depends(get_db)):
     store_items = await store_service.get_all_store_items(
         db, limit=limit, offset=offset, category=category, filter=filter

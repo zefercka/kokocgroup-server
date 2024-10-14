@@ -1,14 +1,19 @@
-from PIL import Image
 from fastapi import UploadFile
 from loguru import logger
+from PIL import Image
+
+from ..dependecies.enums import ImageFormats
 
 TARGET_SIZE_MB = 5
 
 
 @logger.catch
-async def compress_and_save_image(image: UploadFile, path: str):
+async def compress_and_save_image(image: UploadFile, path: str, 
+                                  format: ImageFormats):
     img = Image.open(image.file)
-    img = img.convert("RGB")
+    
+    if format == ImageFormats.JPG:
+        img = img.convert("RGB")
     
     target_size = TARGET_SIZE_MB * 1024 * 1024
     
@@ -18,8 +23,13 @@ async def compress_and_save_image(image: UploadFile, path: str):
             (round(img.size[0] * ratio), round(img.size[1] * ratio))
         )
     
-    path = path + ".jpg"
-    img.save(path, format="JPEG")
+    if format == ImageFormats.JPG:
+        path = path + ".jpg"
+        img.save(path, format="JPEG")
+    elif format == ImageFormats.PNG:
+        path = path + ".png"
+        img.save(path, format="PNG")
+        
     img.close()
     await image.close()
     

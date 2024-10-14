@@ -19,8 +19,8 @@ class EventBase(BaseModel):
 
 class CreateEvent(EventBase):
     location_id: Optional[int] = None
-    first_team_id: Optional[int] = None
-    second_team_id: Optional[int] = None
+    first_team_id: int
+    second_team_id: int
     first_team_score: Optional[int] = 0
     second_team_score: Optional[int] = 0
     

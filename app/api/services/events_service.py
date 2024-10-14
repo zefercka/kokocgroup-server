@@ -22,42 +22,19 @@ async def create_event(db: AsyncSession, event: CreateEvent,
                        current_user: User) -> Event:
     await check_user_permission(current_user, transactions.CREATE_EVENT)
 
-    first_team_id = None
-    second_team_id = None
-    
-    if event.first_team_id is not None:
-        # Если команды нет, то вызовет исключение
-        await teams_service.get_team(db, team_id=event.second_team_id)
-        first_team_id = event.first_team_id
-    
-    if event.second_team_id is not None:
-        # Если команды нет, то вызовет исключение
-        await teams_service.get_team(db, team_id=event.second_team_id)
-        second_team_id = event.second_team_id
+    # Если команды нет, то вызовет исключение
+    await teams_service.get_team(db, team_id=event.first_team_id)
+    # Если команды нет, то вызовет исключение
+    await teams_service.get_team(db, team_id=event.second_team_id)
     
     if event.location_id != None:
         # Если локации нет, то вызовет исключение
         await locations_service.get_location(db, event.location_id)
     
     try:
-        if first_team_id is None:
-            first_team_id = await s_crud.get_settings(
-                db, name=db_constants.BASE_TEAM
-            )
-            first_team_id = int(first_team_id.value)
-            event = await crud.create_event(
-                db, **event.model_dump(exclude=["first_team_id"]), 
-                first_team_id=first_team_id
-            )
-        else:
-            second_team_id = await s_crud.get_settings(
-                db, name=db_constants.BASE_TEAM
-            )
-            second_team_id = int(second_team_id.value)
-            event = await crud.create_event(
-                db, **event.model_dump(exclude=["second_team_id"]), 
-                second_team_id=second_team_id
-            )
+        event = await crud.create_event(
+            db, **event.model_dump()
+        )
         
         return await validate_event_model(event)
     
@@ -91,21 +68,30 @@ async def get_all_events(db: AsyncSession, limit: int,
             if current_event is not None:
                 events.append(await validate_event_model(current_event))
             
-            events.extend(
-                [await validate_event_model(event) for event in future_events]
-            )
-            events.extend(
-                [await validate_event_model(event) for event in finished_events]
-            )
+            print(future_events)
+            if future_events:
+                events.extend(
+                    [await validate_event_model(event) for event in future_events]
+                )
+             
+            print(finished_events) 
+            if finished_events:   
+                events.extend(
+                    [await validate_event_model(event) for event in finished_events]
+                )
 
         elif page == EventPages.EVENT:
             events_objs = await crud.get_all_events(
                 db, limit=limit, offset=offset, opponent_id=opponent_id,
                 year=year, month=month
             )
-            events = [
-                await validate_event_model(event) for event in events_objs
-            ]
+            
+            if len(events_objs):
+                events = [
+                    await validate_event_model(event) for event in events_objs
+                ]
+            else:
+                events = []
         
         else:
             events = []

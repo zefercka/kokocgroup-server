@@ -22,3 +22,8 @@ class MemberRoles(Enum):
 class EventPages(Enum):
     MAIN = "main"
     EVENT = "event"
+    
+    
+class ImageFormats(Enum):
+    JPG = "jpg"
+    PNG = "png"

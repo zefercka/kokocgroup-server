@@ -22,7 +22,7 @@ async def create_event(event: CreateEvent,
 
 @app.get("", response_model=list[Event])
 async def get_all_events(limit: int = 10, offset: int = 0, 
-                         page: EventPages = "main",
+                         page: EventPages = EventPages.MAIN,
                          opponent_id: int | None = None,
                          year: int | None = None,
                          month: int | None = None,

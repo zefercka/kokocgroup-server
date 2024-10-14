@@ -8,6 +8,7 @@ from app.config import db_constants
 
 from .dependecies.database import Base, BaseClear
 
+
 users_roles = Table(
     "users_roles",
     Base.metadata,
@@ -133,14 +134,15 @@ class News(Base):
         back_populates="news"
     )
     
-    __table_args__ = (
-        Index('ix_title_content', 
-              func.coalesce(title, '').concat(
-                  func.coalesce(content, '')).label('news_search'),
-              postgresql_using='gin', 
-              postgresql_ops={'news_search': 'gin_trgm_ops'},
-        ),
-    ) 
+    # __table_args__ = (
+
+    #     # Index('ix_title_content', 
+    #     #       func.coalesce(title, '').concat(
+    #     #           func.coalesce(content, '')).label('news_search'),
+    #     #       postgresql_using='gin', 
+    #     #       postgresql_ops={'news_search': 'gin_trgm_ops'},
+    #     # ),
+    # ) 
 
 
 class NewsAction(Base):
@@ -287,3 +289,9 @@ class StoreCategory(BaseClear):
     __tablename__ = "store_categories"
     
     name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    
+
+Index(
+    'ix_title_content', News.title, News.content, postgresql_using='gin',
+    postgresql_ops={'title': 'gin_trgm_ops', 'content': 'gin_trgm_ops'}
+)
