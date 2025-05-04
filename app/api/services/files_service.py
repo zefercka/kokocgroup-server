@@ -6,15 +6,14 @@ from fastapi.responses import FileResponse
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import files as crud
+from app.api.dependencies.enums import ImageFormats
+from app.api.dependencies.exceptions import (FileNotFound, InternalServerError,
+                                             UnexpectedFileType)
+from app.api.dependencies.images_compressor import compress_and_save_image
+from app.api.schemas.user import User
+from app.api.services import users_service
 from app.config import settings, transactions
-
-from ..cruds import files as crud
-from ..dependecies.enums import ImageFormats
-from ..dependecies.exceptions import (FileNotFound, InternalServerError,
-                                      UnexpectedFileType)
-from ..dependecies.images_compressor import compress_and_save_image
-from ..schemas.user import User
-from . import users_service
 
 
 async def upload_image(db: AsyncSession, image: UploadFile, 

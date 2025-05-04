@@ -2,8 +2,8 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies.enums import StoreItemFilters
-from ..models import Size, StoreCategory, StoreItem
+from app.api.dependencies.enums import StoreItemFilters
+from app.api.models import Size, StoreCategory, StoreItem
 
 
 @logger.catch

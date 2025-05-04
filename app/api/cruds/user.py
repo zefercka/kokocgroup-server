@@ -4,8 +4,8 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies import hash
-from ..models import Role, User
+from app.api.dependencies import hash
+from app.api.models import Role, User
 
 
 @logger.catch

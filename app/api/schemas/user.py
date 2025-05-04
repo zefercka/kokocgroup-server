@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from ..schemas.role import Role
+from app.api.schemas.role import Role
 
 
 class UserBase(BaseModel):

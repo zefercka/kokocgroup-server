@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from ..dependecies.enums import MemberRoles, MemberStatuses
+from app.api.dependencies.enums import MemberRoles, MemberStatuses
 
 
 class TeamList(BaseModel):

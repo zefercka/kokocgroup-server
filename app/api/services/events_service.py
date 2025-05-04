@@ -1,21 +1,20 @@
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import db_constants, transactions
-
-from .. import models
-from ..cruds import event as crud
-from ..cruds import location as l_crud
-from ..cruds import settings as s_crud
-from ..cruds import team as t_crud
-from ..dependecies.enums import EventPages
-from ..dependecies.exceptions import (EventNotFound, InternalServerError,
-                                      LocationNotFound, TeamNotFound)
-from ..schemas.event import CreateEvent, EditEvent, Event
-from ..schemas.team import EventTeam
-from ..schemas.user import User
-from ..services import locations_service, teams_service
-from ..services.users_service import check_user_permission
+from app.api import models
+from app.api.cruds import event as crud
+from app.api.cruds import location as l_crud
+from app.api.cruds import team as t_crud
+from app.api.dependencies.enums import EventPages
+from app.api.dependencies.exceptions import (EventNotFound,
+                                             InternalServerError,
+                                             LocationNotFound, TeamNotFound)
+from app.api.schemas.event import CreateEvent, EditEvent, Event
+from app.api.schemas.team import EventTeam
+from app.api.schemas.user import User
+from app.api.services import locations_service, teams_service
+from app.api.services.users_service import check_user_permission
+from app.config import transactions
+from app.logger import logger
 
 
 async def create_event(db: AsyncSession, event: CreateEvent, 
@@ -39,7 +38,7 @@ async def create_event(db: AsyncSession, event: CreateEvent,
         return await validate_event_model(event)
     
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise 
 
 
@@ -68,13 +67,11 @@ async def get_all_events(db: AsyncSession, limit: int,
             if current_event is not None:
                 events.append(await validate_event_model(current_event))
             
-            print(future_events)
             if future_events:
                 events.extend(
                     [await validate_event_model(event) for event in future_events]
                 )
              
-            print(finished_events) 
             if finished_events:   
                 events.extend(
                     [await validate_event_model(event) for event in finished_events]
@@ -98,7 +95,7 @@ async def get_all_events(db: AsyncSession, limit: int,
             
         return events
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
         
 
@@ -140,7 +137,7 @@ async def edit_event(db: AsyncSession, event: EditEvent,
         
         return event
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
 
 
@@ -151,7 +148,10 @@ async def delete_event(db: AsyncSession, event_id: int, current_user: User):
     if event_obj is None:
         raise EventNotFound
     
-    await crud.delete_event(db, event=event_obj)
+    try:
+        await crud.delete_event(db, event=event_obj)
+    except Exception as err:
+        logger.error(err, exc_info=True)
     
 
 async def get_event_by_id(db: AsyncSession, event_id: int):

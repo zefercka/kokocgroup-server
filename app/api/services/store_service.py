@@ -1,19 +1,20 @@
+from typing import Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import store as crud
+from app.api.dependencies.enums import StoreItemFilters
+from app.api.dependencies.exceptions import (CategoryNotFound, EmptyObject,
+                                             StoreItemNotFound)
+from app.api.schemas.store import CreateStoreItem, StoreItem
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission
 from app.config import transactions
-
-from ..cruds import store as crud
-from ..dependecies.enums import StoreItemFilters
-from ..dependecies.exceptions import (CategoryNotFound, EmptyObject,
-                                      StoreItemNotFound)
-from ..schemas.store import CreateStoreItem, StoreItem
-from ..schemas.user import User
-from ..services.users_service import check_user_permission
 
 
 async def get_all_store_items(db: AsyncSession, limit: int, 
                               offset: int, filter: StoreItemFilters,
-                              category: str | None) -> list[StoreItem]:
+                              category: Optional[str]) -> list[StoreItem]:
     items = await crud.get_all_store_items(
         db, limit=limit, offset=offset, category_name=category, filter=filter
     )

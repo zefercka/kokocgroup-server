@@ -3,9 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 import jwt
 
+from app.api.schemas.token import Token
 from app.config import settings
-
-from ..schemas.token import Token
 
 ALGORITHM = "HS256"
 # JWT (подумать куда вынести)
@@ -40,13 +39,17 @@ async def create_refresh_token(data: dict, expires_delta: timedelta | None = Non
     return token
 
 async def get_payload(token: Token):
-    return jwt.decode(token.token, settings.ACCESS_SECRET_KEY, algorithms=[ALGORITHM])
+    return jwt.decode(
+        jwt=token.token, 
+        key=settings.ACCESS_SECRET_KEY, 
+        algorithms=[ALGORITHM]
+    )
 
 
 async def get_user_id(token: Token) -> int:
     payload = await get_payload(token)
     user_id = payload.get("sub")
-    return user_id
+    return int(user_id)
 
 
 async def get_expire_date(token: Token) -> datetime:

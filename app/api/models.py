@@ -1,13 +1,11 @@
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List
 
-from sqlalchemy import Column, ForeignKey, String, Table, Index, func
+from sqlalchemy import Column, ForeignKey, Index, String, Table, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.api.dependencies.database import Base, BaseClear
 from app.config import db_constants
-
-from .dependecies.database import Base, BaseClear
-
 
 users_roles = Table(
     "users_roles",
@@ -133,16 +131,6 @@ class News(Base):
     category: Mapped["NewsCategory"] = relationship(
         back_populates="news"
     )
-    
-    # __table_args__ = (
-
-    #     # Index('ix_title_content', 
-    #     #       func.coalesce(title, '').concat(
-    #     #           func.coalesce(content, '')).label('news_search'),
-    #     #       postgresql_using='gin', 
-    #     #       postgresql_ops={'news_search': 'gin_trgm_ops'},
-    #     # ),
-    # ) 
 
 
 class NewsAction(Base):

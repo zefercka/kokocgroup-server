@@ -2,9 +2,8 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.models import Location
 from app.config import team_member_settings
-
-from ..models import Location
 
 
 @logger.catch

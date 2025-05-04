@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import select, delete
+from loguru import logger
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import RefreshToken
-from loguru import logger
+from app.api.models import RefreshToken
 
 
 @logger.catch

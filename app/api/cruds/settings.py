@@ -1,8 +1,8 @@
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import BaseSettings
-from loguru import logger
+from app.api.models import BaseSettings
 
 
 @logger.catch

@@ -1,12 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import news as crud
+from app.api.dependencies.exceptions import CategoryNotFound, NewsNotFound
+from app.api.schemas.news import News
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission
 from app.config import db_constants, transactions
-
-from ..cruds import news as crud
-from ..dependecies.exceptions import CategoryNotFound, NewsNotFound
-from ..schemas.news import News
-from ..schemas.user import User
-from .users_service import check_user_permission
 
 
 async def get_news(db: AsyncSession, news_id: int) -> News:

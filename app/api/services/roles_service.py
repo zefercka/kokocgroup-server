@@ -1,13 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import permission as p_crud
+from app.api.cruds import role as crud
+from app.api.dependencies.exceptions import RoleNotFound
+from app.api.schemas.role import CreateRole, Role
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission
 from app.config import transactions
-
-from ..cruds import permission as p_crud
-from ..cruds import role as crud
-from ..dependecies.exceptions import RoleNotFound
-from ..schemas.role import CreateRole, Role
-from ..schemas.user import User
-from ..services.users_service import check_user_permission
 
 
 async def create_role(db: AsyncSession, role: CreateRole, 

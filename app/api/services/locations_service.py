@@ -1,13 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import location as crud
+from app.api.dependencies.exceptions import LocationNotFound
+from app.api.schemas.location import CreateLocation, Location
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission
 from app.config import transactions
-
-from .. import models
-from ..cruds import location as crud
-from ..dependecies.exceptions import LocationNotFound
-from ..schemas.location import Location, CreateLocation
-from ..schemas.user import User
-from ..services.users_service import check_user_permission
 
 
 async def get_all_locations(db: AsyncSession, limit: int, 

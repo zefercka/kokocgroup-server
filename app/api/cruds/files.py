@@ -1,7 +1,7 @@
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import FileUpload
+from app.api.models import FileUpload
 
 
 @logger.catch

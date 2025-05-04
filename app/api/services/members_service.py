@@ -1,13 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import member as crud
+from app.api.dependencies.exceptions import MemberNotFound
+from app.api.models import TeamMember
+from app.api.schemas.member import EditMember, Member, NewMember, TeamList
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission, get_user
 from app.config import team_member_settings, transactions
-
-from ..cruds import member as crud
-from ..dependecies.exceptions import MemberNotFound
-from ..models import TeamMember
-from ..schemas.member import Member, NewMember, TeamList, EditMember
-from ..schemas.user import User
-from .users_service import check_user_permission, get_user
 
 
 async def get_all_active_team_members(db: AsyncSession):

@@ -2,7 +2,7 @@ from fastapi import UploadFile
 from loguru import logger
 from PIL import Image
 
-from ..dependecies.enums import ImageFormats
+from app.api.dependencies.enums import ImageFormats
 
 TARGET_SIZE_MB = 5
 

@@ -1,8 +1,8 @@
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import Permission, Role
-from loguru import logger
+from app.api.models import Permission, Role
 
 
 @logger.catch

@@ -4,18 +4,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from .api.controllers.auth_controller import app as auth_controller
-from .api.controllers.events_controller import app as events_controller
-from .api.controllers.files_controller import app as files_controller
-from .api.controllers.health_controller import app as health_controller
-from .api.controllers.locations_controller import app as locations_controller
-from .api.controllers.members_controller import app as members_controller
-from .api.controllers.news_controller import app as news_controller
-from .api.controllers.roles_controller import app as role_controller
-from .api.controllers.store_controller import app as store_controller
-from .api.controllers.teams_controller import app as teams_controller
-from .api.controllers.users_controller import app as user_controller
-from .api.dependecies.cleaner import scheduled_cleaner
+from app.api.controllers.auth_controller import app as auth_controller
+from app.api.controllers.events_controller import app as events_controller
+from app.api.controllers.files_controller import app as files_controller
+from app.api.controllers.health_controller import app as health_controller
+from app.api.controllers.locations_controller import \
+    app as locations_controller
+from app.api.controllers.members_controller import app as members_controller
+from app.api.controllers.news_controller import app as news_controller
+from app.api.controllers.roles_controller import app as role_controller
+from app.api.controllers.store_controller import app as store_controller
+from app.api.controllers.teams_controller import app as teams_controller
+from app.api.controllers.users_controller import app as user_controller
+from app.api.dependencies.cleaner import scheduled_cleaner
 
 
 @asynccontextmanager

@@ -1,12 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.cruds import team as crud
+from app.api.dependencies.exceptions import TeamNotFound
+from app.api.schemas.team import CreateTeam, Team
+from app.api.schemas.user import User
+from app.api.services.users_service import check_user_permission
 from app.config import transactions
-
-from ..cruds import team as crud
-from ..dependecies.exceptions import TeamNotFound
-from ..schemas.team import Team, CreateTeam
-from ..schemas.user import User
-from ..services.users_service import check_user_permission
 
 
 async def get_team(db: AsyncSession, team_id: int) -> Team:

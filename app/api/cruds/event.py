@@ -4,7 +4,7 @@ from loguru import logger
 from sqlalchemy import and_, extract, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import Event
+from app.api.models import Event
 
 
 @logger.catch

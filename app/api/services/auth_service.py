@@ -4,23 +4,23 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from jwt import InvalidTokenError
 from jwt.exceptions import DecodeError, ExpiredSignatureError
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..cruds import refresh_token as token_crud
-from ..cruds import user as crud
-from ..dependecies import hash, jwt
-from ..dependecies.database import get_db
-from ..dependecies.exceptions import (InternalServerError, InvalidEmail,
-                                      InvalidToken, TokenExpired, TokenRevoked,
-                                      UnexpectedTokenType, UserNotFound)
-from ..schemas.authorization import Authorization
-from ..schemas.token import SendToken, Token
-from ..schemas.user import AuthorizedUser, CreateUser, SendUser, User
-from . import users_service
+from app.api.cruds import refresh_token as token_crud
+from app.api.cruds import user as crud
+from app.api.dependencies import hash, jwt
+from app.api.dependencies.database import get_db
+from app.api.dependencies.exceptions import (InternalServerError, InvalidEmail,
+                                             InvalidToken, TokenExpired,
+                                             TokenRevoked, UnexpectedTokenType,
+                                             UserNotFound)
+from app.api.schemas.authorization import Authorization
+from app.api.schemas.token import SendToken, Token
+from app.api.schemas.user import AuthorizedUser, CreateUser, SendUser, User
+from app.api.services import users_service
+from app.logger import logger
 
 token_key = APIKeyHeader(name="Authorization")
-
 
 async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUser:
     user = await authenticate_user(db, data.login, data.password)
@@ -31,8 +31,8 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
         )
         
     try:
-        access_token = await jwt.create_access_token(data={"sub": user.id})
-        refresh_token = await jwt.create_refresh_token(data={"sub": user.id})
+        access_token = await jwt.create_access_token(data={"sub": str(user.id)})
+        refresh_token = await jwt.create_refresh_token(data={"sub": str(user.id)})
         
         await token_crud.add_token(
             db, token=refresh_token.token, expired_date=refresh_token.expires_at,
@@ -45,7 +45,7 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
             expires_at=access_token.expires_at, refresh_token=refresh_token.token
         )
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
     
     return authorized_user
@@ -60,7 +60,7 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
             False if await crud.get_user_by_email(db, user_create.email) or \
             await crud.get_user_by_username(db, user_create.username) else True
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
     
     if is_unique_user is False:
@@ -78,7 +78,7 @@ async def register_user(db: AsyncSession, user_create: CreateUser) -> Authorized
         
         return user
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
  
 
@@ -97,7 +97,7 @@ async def authenticate_user(db: AsyncSession, login: str,
         
         return None
     except Exception as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
 
 async def logout_user(db: AsyncSession, token: Token):    
@@ -116,12 +116,12 @@ async def logout_user(db: AsyncSession, token: Token):
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
         
 
 async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
-    try:
+    try:        
         user_id = await jwt.get_user_id(refresh_token)
         token = await token_crud.get_token(db, token=refresh_token.token)
         
@@ -130,8 +130,8 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
             
         await token_crud.delete_token_obj(db, token)
             
-        access_token = await jwt.create_access_token(data={"sub": user_id})
-        refresh_token = await jwt.create_refresh_token(data={"sub": user_id})
+        access_token = await jwt.create_access_token(data={"sub": str(user_id)})
+        refresh_token = await jwt.create_refresh_token(data={"sub": str(user_id)})
         
         await token_crud.add_token(
             db, token=refresh_token.token, 
@@ -149,7 +149,7 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError
 
 
@@ -174,5 +174,5 @@ async def get_current_user(db: AsyncSession = Depends(get_db),
     except DecodeError:
         raise InvalidToken
     except InvalidTokenError as err:
-        logger.error(err)
+        logger.error(err, exc_info=True)
         raise InternalServerError

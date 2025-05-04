@@ -3,8 +3,8 @@ from asyncio import Lock
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loguru import logger
 
-from ..cruds import news, refresh_token
-from ..dependecies.database import SessionLocal
+from app.api.cruds import news, refresh_token
+from app.api.dependencies.database import SessionLocal
 
 lock = Lock()
 

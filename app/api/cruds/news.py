@@ -4,9 +4,8 @@ from loguru import logger
 from sqlalchemy import and_, delete, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.models import News, NewsAction, NewsCategory
 from app.config import db_constants
-
-from ..models import News, NewsAction, NewsCategory
 
 
 @logger.catch

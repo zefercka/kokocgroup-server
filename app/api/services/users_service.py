@@ -2,14 +2,14 @@ from fastapi import HTTPException, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api import models
+from app.api.cruds import role as r_crud
+from app.api.cruds import settings as settings_crud
+from app.api.cruds import user as crud
+from app.api.dependencies.exceptions import (NoPermissions, RoleNotFound,
+                                             UserNotFound)
+from app.api.schemas.user import User
 from app.config import db_constants, transactions
-
-from .. import models
-from ..cruds import role as r_crud
-from ..cruds import settings as settings_crud
-from ..cruds import user as crud
-from ..dependecies.exceptions import NoPermissions, RoleNotFound, UserNotFound
-from ..schemas.user import User
 
 token_key = APIKeyHeader(name="Authorization")
 

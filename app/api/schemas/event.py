@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
-from ..schemas.team import EventTeam
+from app.api.schemas.team import EventTeam
 
 
 class EventBase(BaseModel):

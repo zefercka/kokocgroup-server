@@ -2,7 +2,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..models import Team
+from app.api.models import Team
 
 
 @logger.catch
