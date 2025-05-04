@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies.database import get_db
-from ..dependecies.enums import MemberStatuses
-from ..schemas.member import EditMember, NewMember, TeamList
-from ..schemas.user import User
-from ..services import auth_service, members_service
+from app.api.dependencies.database import get_db
+from app.api.dependencies.enums import MemberStatuses
+from app.api.schemas.member import EditMember, NewMember, TeamList
+from app.api.schemas.user import User
+from app.api.services import auth_service, members_service
 
 app = APIRouter()
 

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies.database import get_db
-from ..dependecies.enums import ImageFormats
-from ..schemas.user import User
-from ..services import auth_service, files_service
+from app.api.dependencies.database import get_db
+from app.api.dependencies.enums import ImageFormats
+from app.api.schemas.user import User
+from app.api.services import auth_service, files_service
 
 app = APIRouter()
 

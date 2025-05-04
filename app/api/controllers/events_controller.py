@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies.database import get_db
-from ..dependecies.enums import EventPages
-from ..schemas.event import CreateEvent, EditEvent, Event
-from ..schemas.user import User
-from ..services import events_service
-from ..services.auth_service import get_current_user
+from app.api.dependencies.database import get_db
+from app.api.dependencies.enums import EventPages
+from app.api.schemas.event import CreateEvent, EditEvent, Event
+from app.api.schemas.user import User
+from app.api.services import events_service
+from app.api.services.auth_service import get_current_user
 
 app = APIRouter()
 
