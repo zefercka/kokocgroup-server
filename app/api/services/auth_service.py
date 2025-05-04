@@ -31,18 +31,14 @@ async def authorize_user(db: AsyncSession, data: Authorization) -> AuthorizedUse
         )
         
     try:
-        access_token = await jwt.create_access_token(data={"sub": str(user.id)})
-        refresh_token = await jwt.create_refresh_token(data={"sub": str(user.id)})
-        
-        await token_crud.add_token(
-            db, token=refresh_token.token, expired_date=refresh_token.expires_at,
-            user_id=user.id
-        )
+        access_token, refresh_token = await jwt.issue_tokens_for_user(db, user_id=user.id)
 
         user = SendUser.model_validate(user.model_dump(exclude=["roles"]))
         authorized_user = AuthorizedUser(
-            user=user, access_token=access_token.token, 
-            expires_at=access_token.expires_at, refresh_token=refresh_token.token
+            user=user,
+            access_token=access_token.token,
+            expires_at=access_token.expires_at,
+            refresh_token=refresh_token.token
         )
     except Exception as err:
         logger.error(err, exc_info=True)
@@ -100,6 +96,7 @@ async def authenticate_user(db: AsyncSession, login: str,
         logger.error(err, exc_info=True)
         raise InternalServerError
 
+
 async def logout_user(db: AsyncSession, token: Token):    
     try:
         token_type = await jwt.get_token_type(token=token)
@@ -120,31 +117,28 @@ async def logout_user(db: AsyncSession, token: Token):
         raise InternalServerError
         
 
-async def refresh_tokens_by_refresh_token(db: AsyncSession,
-                                          refresh_token: Token) -> SendToken:
+async def refresh_tokens_by_refresh_token(
+    db: AsyncSession, refresh_token: Token
+) -> SendToken:
     try:        
-        user_id = await jwt.get_user_id(refresh_token)
-        token = await token_crud.get_token(db, token=refresh_token.token)
+        user_id = jwt.get_user_id(refresh_token)
+        stored_token = await token_crud.get_token(db, token=refresh_token.token)
         
-        if token is None:
+        if stored_token is None:
             raise TokenRevoked
             
         await token_crud.delete_token_obj(db, token)
             
-        access_token = await jwt.create_access_token(data={"sub": str(user_id)})
-        refresh_token = await jwt.create_refresh_token(data={"sub": str(user_id)})
-        
-        await token_crud.add_token(
-            db, token=refresh_token.token, 
-            expired_date=refresh_token.expires_at, user_id=user_id
+        access_token, refresh_token = await jwt.issue_tokens_for_user(
+            db, user_id=user_id
         )
         
         token = SendToken(
-            access_token=access_token.token, expires_at=access_token.expires_at, 
+            access_token=access_token.token,
+            expires_at=access_token.expires_at,
             refresh_token=refresh_token.token
         )
         return token
-        
     except ExpiredSignatureError:
         raise TokenExpired
     except DecodeError:
@@ -165,8 +159,12 @@ async def get_current_token(auth_key: str = Security(token_key)) -> Token:
 async def get_current_user(db: AsyncSession = Depends(get_db), 
                            token: Token = Depends(get_current_token)) -> User:    
     try:
-        user_id = await jwt.get_user_id(token=token)            
-        user = await crud.get_user_by_id(db, user_id=user_id)
+        token_type = jwt.get_token_type(token=token)
+        if token_type != "access":
+            raise UnexpectedTokenType
+        
+        user_id = jwt.get_user_id(token=token)            
+        user = crud.get_user_by_id(db, user_id=user_id)
         
         if user is None:
             raise UserNotFound
