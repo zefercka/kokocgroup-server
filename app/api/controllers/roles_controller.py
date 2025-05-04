@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependecies.database import get_db
-from ..schemas.role import Role, CreateRole
-from ..schemas.user import User
-from ..services import auth_service, roles_service
+from app.api.dependencies.database import get_db
+from app.api.schemas.role import CreateRole, Role
+from app.api.schemas.user import User
+from app.api.services import auth_service, roles_service
 
 app = APIRouter()
 

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas.user import AuthorizedUser, CreateUser
-from ..schemas.authorization import Authorization
-from ..schemas.token import SendToken, Token
-from ..dependecies.database import get_db
-from ..services import auth_service
+from app.api.dependencies.database import get_db
+from app.api.schemas.authorization import Authorization
+from app.api.schemas.token import SendToken, Token
+from app.api.schemas.user import AuthorizedUser, CreateUser
+from app.api.services import auth_service
 
 app = APIRouter()
 
@@ -21,8 +21,11 @@ async def register(user: CreateUser, db: AsyncSession = Depends(get_db)):
     
     
 @app.post("/refresh", response_model=SendToken)
-async def update_tokens(refresh_token: Token = Depends(auth_service.get_current_token),  db: AsyncSession = Depends(get_db)):
-    return await auth_service.new_tokens(db, refresh_token)
+async def update_tokens(
+    refresh_token: Token = Depends(auth_service.get_current_token),
+    db: AsyncSession = Depends(get_db)
+):
+    return await auth_service.refresh_tokens_by_refresh_token(db, refresh_token)
     
     
 @app.delete("/logout")

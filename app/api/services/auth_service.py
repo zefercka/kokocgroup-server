@@ -120,7 +120,8 @@ async def logout_user(db: AsyncSession, token: Token):
         raise InternalServerError
         
 
-async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
+async def refresh_tokens_by_refresh_token(db: AsyncSession,
+                                          refresh_token: Token) -> SendToken:
     try:        
         user_id = await jwt.get_user_id(refresh_token)
         token = await token_crud.get_token(db, token=refresh_token.token)
@@ -154,7 +155,10 @@ async def new_tokens(db: AsyncSession, refresh_token: Token) -> SendToken:
 
 
 async def get_current_token(auth_key: str = Security(token_key)) -> Token:
-    token = auth_key.split()[-1]
+    if not auth_key or not auth_key.startswith("Bearer "):
+        raise InvalidToken
+    
+    token = auth_key.removeprefix("Bearer ").strip()
     return Token(token=token)
 
 
