@@ -151,3 +151,11 @@ class InvalidEmail(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Некорректная почта"
         )
+        
+
+class InvalidPageType(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Неверный тип страницы"
+        )
