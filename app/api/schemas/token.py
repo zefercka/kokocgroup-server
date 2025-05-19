@@ -9,6 +9,14 @@ class Token(BaseModel):
     expires_at: Optional[datetime] = None
 
 
+class AccessToken(Token):
+    pass
+
+
+class RefreshToken(Token):
+    pass 
+
+
 class SendToken(BaseModel):
     access_token: str
     expires_at: datetime
