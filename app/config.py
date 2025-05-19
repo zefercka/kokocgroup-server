@@ -9,16 +9,24 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    
     ACCESS_SECRET_KEY: str
     REFRESH_SECRET_KEY: str
     IMAGES_PATH: str
+    
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env"),
+        env_nested_delimiter=None,
+        case_insensitive=False,
+        frozen=True,
     )
+    
+    # class Config:
+        # env_file = ".test.env"
     
 
 class Transactions:
-    #  If you change it here, then you can also change it in the database
+    #  If you change it here, then you need also change it in the database
     
     # Actions with news
     CREATE_NEWS = "create_news"

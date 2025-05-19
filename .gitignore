@@ -123,6 +123,7 @@ celerybeat.pid
 
 # Environments
 .env
+.test.env
 .venv
 env/
 venv/
@@ -167,3 +168,4 @@ cython_debug/
 # Alembic
 alembic.ini
 */migration
+logs/

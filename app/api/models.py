@@ -80,7 +80,7 @@ class User(Base):
     password_hash: Mapped[str]
     
     tokens: Mapped[List["RefreshToken"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
+        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
     )
     roles: Mapped[List["Role"]] = relationship(
         secondary="users_roles", back_populates="users", lazy="selectin"
@@ -279,7 +279,7 @@ class StoreCategory(BaseClear):
     name: Mapped[str] = mapped_column(String(64), primary_key=True)
     
 
-Index(
-    'ix_title_content', News.title, News.content, postgresql_using='gin',
-    postgresql_ops={'title': 'gin_trgm_ops', 'content': 'gin_trgm_ops'}
-)
+# Index(
+#     'ix_title_content', News.title, News.content, postgresql_using='gin',
+#     postgresql_ops={'title': 'gin_trgm_ops', 'content': 'gin_trgm_ops'}
+# )
